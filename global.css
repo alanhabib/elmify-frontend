@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove all focus rings and outlines */
+*:focus,
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+@layer base {
+  :root,
+  [data-theme="midnight"] {
+    /* Midnight Blue + Electric Purple */
+    --background: 230 32% 12%; /* #181A2A */
+    --foreground: 220 20% 98%; /* #F3F6FA */
+    --card: 230 32% 15%; /* #20243A */
+    --card-foreground: 220 20% 98%;
+    --popover: 230 32% 17%; /* #232B3A */
+    --popover-foreground: 220 20% 98%;
+    --primary: 265 90% 65%; /* #A259F7 */
+    --primary-foreground: 230 32% 12%;
+    --secondary: 220 24% 22%; /* #3A4A6B */
+    --secondary-foreground: 220 20% 98%;
+    --muted: 230 16% 24%;
+    --muted-foreground: 220 12% 70%;
+    --accent: 265 90% 65%;
+    --accent-foreground: 230 32% 12%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 20% 98%;
+    --border: 230 16% 24%;
+    --input: 230 16% 24%;
+    --ring: 265 90% 65%;
+    --radius: 0.5rem;
+    --sidebar-background: 230 32% 12%;
+    --sidebar-foreground: 220 20% 80%;
+    --sidebar-primary: 265 90% 65%;
+    --sidebar-primary-foreground: 230 32% 12%;
+    --sidebar-accent: 230 32% 17%;
+    --sidebar-accent-foreground: 220 20% 98%;
+    --sidebar-border: 230 16% 24%;
+    --sidebar-ring: 265 90% 65%;
+  }
+
+  [data-theme="charcoal"] {
+    /* Charcoal + Neon Coral */
+    --background: 220 12% 16%; /* #23272F */
+    --foreground: 220 20% 98%; /* #E6E8EB */
+    --card: 220 12% 19%; /* #282C34 */
+    --card-foreground: 220 20% 98%;
+    --popover: 220 12% 21%; /* #2B2F37 */
+    --popover-foreground: 220 20% 98%;
+    --primary: 4 100% 65%; /* #FF5E5B */
+    --primary-foreground: 220 12% 16%;
+    --secondary: 220 16% 28%; /* #4B5D67 */
+    --secondary-foreground: 220 20% 98%;
+    --muted: 220 12% 24%;
+    --muted-foreground: 220 12% 70%;
+    --accent: 4 100% 65%;
+    --accent-foreground: 220 12% 16%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 20% 98%;
+    --border: 220 12% 24%;
+    --input: 220 12% 24%;
+    --ring: 4 100% 65%;
+    --radius: 0.5rem;
+    --sidebar-background: 220 12% 16%;
+    --sidebar-foreground: 220 20% 80%;
+    --sidebar-primary: 4 100% 65%;
+    --sidebar-primary-foreground: 220 12% 16%;
+    --sidebar-accent: 220 12% 21%;
+    --sidebar-accent-foreground: 220 20% 98%;
+    --sidebar-border: 220 12% 24%;
+    --sidebar-ring: 4 100% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile optimizations for React Native Web */
+  html {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    overscroll-behavior: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  #root {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+    position: relative;
+    z-index: 0;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  
+  .touch-feedback {
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  
+  .touch-feedback:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Remove all focus states globally */
+@layer base {
+  *,
+  *:focus,
+  *:focus-visible,
+  *:focus-within,
+  button,
+  button:focus,
+  button:focus-visible,
+  [role="button"],
+  [role="button"]:focus,
+  [role="button"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}

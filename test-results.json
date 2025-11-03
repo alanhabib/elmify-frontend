@@ -1,0 +1,181 @@
+{
+  "config": {
+    "configFile": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/playwright.config.js",
+    "rootDir": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 1,
+    "webServer": {
+      "command": "echo \"Server already running\"",
+      "url": "http://localhost:8082",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "speaker-collections-lectures-flow-with-auth.spec.js",
+      "file": "speaker-collections-lectures-flow-with-auth.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AudibleClone: Complete Flow with Auth Bypass",
+          "file": "speaker-collections-lectures-flow-with-auth.spec.js",
+          "line": 44,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete speaker to lectures navigation flow with authentication bypass",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 20000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 20040,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 20000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 20000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 20000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🔧 Enabling authentication bypass for testing...\n"
+                        },
+                        {
+                          "text": "✅ Authentication bypass enabled\n"
+                        },
+                        {
+                          "text": "Step 1: Loading initial page with auth bypass...\n"
+                        },
+                        {
+                          "text": "Step 2: Verifying authentication bypass...\n"
+                        },
+                        {
+                          "text": "✅ Successfully bypassed authentication. Current URL: http://localhost:8082/\n"
+                        },
+                        {
+                          "text": "Step 3: Waiting for speakers to load...\n"
+                        },
+                        {
+                          "text": "🔧 Disabling authentication bypass...\n"
+                        },
+                        {
+                          "text": "✅ Authentication bypass disabled\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "buffer": ""
+                        },
+                        {
+                          "buffer": ""
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-09-24T12:53:57.139Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/test-results/speaker-collections-lectur-61b67--with-authentication-bypass-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/alanhabib/Desktop/hobby_projects/AudibleClone/client/test-results/speaker-collections-lectur-61b67--with-authentication-bypass-chromium/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "38ebb4be920327d2c4ab-ce5b2e66153bd4854f29",
+              "file": "speaker-collections-lectures-flow-with-auth.spec.js",
+              "line": 60,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-24T12:53:56.686Z",
+    "duration": 20686.368,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
