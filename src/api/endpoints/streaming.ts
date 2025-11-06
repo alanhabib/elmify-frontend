@@ -7,8 +7,8 @@
  * @module api/endpoints/streaming
  */
 
-import { apiClient } from '@/api/client';
-import type { APIResponse } from '@/api/types';
+import { apiClient } from "@/api/client";
+import type { APIResponse } from "@/api/types";
 
 // ============================================================================
 // TYPES
@@ -44,21 +44,29 @@ export const streamingAPI = {
    * }
    * ```
    */
-  async getAudioStreamUrl(lectureId: string): Promise<APIResponse<StreamUrlResponse>> {
-    console.log('[streamingAPI.getAudioStreamUrl] Fetching audio URL for lecture:', lectureId);
+  async getAudioStreamUrl(
+    lectureId: string
+  ): Promise<APIResponse<StreamUrlResponse>> {
+    console.log(
+      "[streamingAPI.getAudioStreamUrl] Fetching audio URL for lecture:",
+      lectureId
+    );
 
     try {
       const result = await apiClient.get<StreamUrlResponse>(
         `/api/v1/lectures/${lectureId}/stream-url`
       );
 
-      console.log('[streamingAPI.getAudioStreamUrl] Result:', result);
+      console.log("[streamingAPI.getAudioStreamUrl] Result:", result);
       return result;
     } catch (error) {
-      console.error('[streamingAPI.getAudioStreamUrl] Error:', error);
+      console.error("[streamingAPI.getAudioStreamUrl] Error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get audio stream URL',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to get audio stream URL",
       };
     }
   },
@@ -87,25 +95,38 @@ export const streamingAPI = {
    * - GET /api/v1/lectures/{id}/thumbnail-url
    */
   async getImageStreamUrl(
-    type: 'speaker' | 'collection' | 'lecture',
+    type: "speaker" | "collection" | "lecture",
     id: string
   ): Promise<APIResponse<StreamUrlResponse>> {
-    console.log(`[streamingAPI.getImageStreamUrl] Fetching ${type} image URL for ID:`, id);
+    console.log(
+      `[streamingAPI.getImageStreamUrl] Fetching ${type} image URL for ID:`,
+      id
+    );
 
     try {
-      const endpoint = type === 'lecture'
-        ? `/api/v1/lectures/${id}/thumbnail-url`
-        : `/api/v1/${type}s/${id}/image-url`;
+      const endpoint =
+        type === "lecture"
+          ? `/api/v1/lectures/${id}/thumbnail-url`
+          : `/api/v1/${type}s/${id}/image-url`;
 
       const result = await apiClient.get<StreamUrlResponse>(endpoint);
 
-      console.log(`[streamingAPI.getImageStreamUrl] ${type} image result:`, result);
+      console.log(
+        `[streamingAPI.getImageStreamUrl] ${type} image result:`,
+        result
+      );
       return result;
     } catch (error) {
-      console.warn(`[streamingAPI.getImageStreamUrl] Error fetching ${type} image:`, error);
+      console.warn(
+        `[streamingAPI.getImageStreamUrl] Error fetching ${type} image:`,
+        error
+      );
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get image stream URL',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to get image stream URL",
       };
     }
   },

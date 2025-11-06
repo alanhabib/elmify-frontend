@@ -1,11 +1,11 @@
 {
-  "name": "audibleclone",
+  "name": "elmify",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start --port=8085",
     "android": "expo run:android --port=8085",
-    "ios": "expo run:ios --port=8085",
+    "ios": "npx expo start --port=8085",
     "web": "expo start --web --port=8085"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@tanstack/react-query": "^5.72.2",
     "clsx": "^2.1.1",
     "expo": "^54.0.13",
+    "expo-apple-authentication": "~8.0.7",
     "expo-audio": "~1.0.13",
     "expo-auth-session": "~7.0.8",
     "expo-constants": "~18.0.9",

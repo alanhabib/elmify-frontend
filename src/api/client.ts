@@ -11,8 +11,8 @@
  * Based on your existing APIClient with React Native optimizations
  */
 
-import { AuthManager } from '@/services/auth/authManager';
-import { API_BASE_URL } from '@/config/env';
+import { AuthManager } from "@/services/auth/authManager";
+import { API_BASE_URL } from "@/config/env";
 
 /**
  * Standard API response wrapper
@@ -58,7 +58,9 @@ export class APIClient {
       return await AuthManager.getAuthHeaders();
     } catch (error) {
       throw new Error(
-        `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Authentication failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   }
@@ -114,19 +116,22 @@ export class APIClient {
 
           const errorText = await response.text();
           throw new Error(
-            `HTTP ${response.status}: ${response.statusText} - ${errorText || 'No error details'}`
+            `HTTP ${response.status}: ${response.statusText} - ${
+              errorText || "No error details"
+            }`
           );
         }
 
         // Parse response based on content type
-        const contentType = response.headers.get('content-type');
+        const contentType = response.headers.get("content-type");
         let data: T | null = null;
 
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType && contentType.includes("application/json")) {
           data = await response.json();
         } else if (
           contentType &&
-          (contentType.includes('text/') || contentType.includes('application/xml'))
+          (contentType.includes("text/") ||
+            contentType.includes("application/xml"))
         ) {
           data = (await response.text()) as unknown as T;
         }
@@ -140,7 +145,7 @@ export class APIClient {
         lastError = error as Error;
 
         // Don't retry on 4xx errors (except 401)
-        if (error instanceof Error && 'status' in error) {
+        if (error instanceof Error && "status" in error) {
           const status = (error as any).status;
           if (status >= 400 && status < 500 && status !== 401) {
             break; // Client error, no point retrying
@@ -160,7 +165,7 @@ export class APIClient {
 
     // All retries failed
     return {
-      error: lastError?.message || 'Unknown error occurred',
+      error: lastError?.message || "Unknown error occurred",
       success: false,
       status: 0,
     };
@@ -171,7 +176,7 @@ export class APIClient {
    */
   async get<T>(endpoint: string): Promise<APIResponse<T>> {
     return this.makeRequest<T>(endpoint, {
-      method: 'GET',
+      method: "GET",
     });
   }
 
@@ -180,9 +185,9 @@ export class APIClient {
    */
   async post<T>(endpoint: string, data?: any): Promise<APIResponse<T>> {
     return this.makeRequest<T>(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: data ? JSON.stringify(data) : undefined,
     });
@@ -193,9 +198,9 @@ export class APIClient {
    */
   async put<T>(endpoint: string, data?: any): Promise<APIResponse<T>> {
     return this.makeRequest<T>(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: data ? JSON.stringify(data) : undefined,
     });
@@ -206,9 +211,9 @@ export class APIClient {
    */
   async patch<T>(endpoint: string, data?: any): Promise<APIResponse<T>> {
     return this.makeRequest<T>(endpoint, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: data ? JSON.stringify(data) : undefined,
     });
@@ -219,7 +224,7 @@ export class APIClient {
    */
   async delete<T>(endpoint: string): Promise<APIResponse<T>> {
     return this.makeRequest<T>(endpoint, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }
@@ -229,14 +234,14 @@ export class APIClient {
  */
 export const API_CONFIG: Record<string, APIConfig> = {
   development: {
-    baseURL: 'http://localhost:8081',
-    timeout: 10000, // 10s for dev (slower local network)
-    retries: 2, // Fewer retries in dev
+    baseURL: "http://localhost:8081",
+    timeout: 10000, // 10s for dev
+    retries: 2,
   },
   production: {
     baseURL: API_BASE_URL,
-    timeout: 8000, // 8s for prod (optimized backend)
-    retries: 3, // More retries in prod (network issues)
+    timeout: 8000, // 8s for prod
+    retries: 3,
   },
 };
 
@@ -246,8 +251,8 @@ export const API_CONFIG: Record<string, APIConfig> = {
  *
  * @example
  * import { apiClient } from '@/api/client';
- * const response = await apiClient.get('/api/v1/speakers');
+ * const response = await apiClient.get('/speakers');
  */
 export const apiClient = new APIClient(
-  API_CONFIG[__DEV__ ? 'development' : 'production']
+  API_CONFIG[__DEV__ ? "development" : "production"]
 );

@@ -4,17 +4,17 @@
  */
 
 // Default to local development URLs
-const DEFAULT_API_BASE_URL = __DEV__ 
-  ? "http://localhost:8081" 
-  : "https://your-production-api.com";
+const DEFAULT_API_BASE_URL = __DEV__
+  ? "http://localhost:8081/api/v1"
+  : "https://elmify-backend-production.up.railway.app/api/v1";
 
-const DEFAULT_MEDIA_BASE_URL = __DEV__ 
-  ? "http://localhost:8081" 
-  : "https://your-production-media.com";
+const DEFAULT_MEDIA_BASE_URL = __DEV__
+  ? "http://localhost:8081"
+  : "https://elmify-backend-production.up.railway.app";
 
-const DEFAULT_STREAM_BASE_URL = __DEV__ 
-  ? "http://localhost:8081/api/catalog/lectures" 
-  : "https://your-production-stream.com";
+const DEFAULT_STREAM_BASE_URL = __DEV__
+  ? "http://localhost:8081/api/v1/lectures"
+  : "https://elmify-backend-production.up.railway.app/api/v1/lectures";
 
 /**
  * API Base URL for REST endpoints
@@ -35,9 +35,11 @@ export const MEDIA_BASE_URL = process.env.EXPO_PUBLIC_MEDIA_BASE_URL || DEFAULT_
 export const STREAM_BASE_URL = process.env.EXPO_PUBLIC_STREAM_BASE_URL || DEFAULT_STREAM_BASE_URL;
 
 /**
- * MinIO/S3 Configuration (if needed separately)
+ * MinIO/S3 Configuration
  */
 export const MINIO_BASE_URL = process.env.EXPO_PUBLIC_MINIO_BASE_URL || "http://localhost:9000";
+
+export const STORAGE_BASE_URL = MINIO_BASE_URL;
 
 /**
  * Environment flags
@@ -56,6 +58,7 @@ export default {
   MEDIA_BASE_URL,
   STREAM_BASE_URL,
   MINIO_BASE_URL,
+  STORAGE_BASE_URL,
   IS_DEVELOPMENT,
   IS_PRODUCTION,
   ENABLE_API_LOGGING,

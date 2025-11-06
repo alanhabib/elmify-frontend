@@ -12,14 +12,14 @@
  * Pattern: All functions return Promise<APIResponse<T>>
  */
 
-import { apiClient } from '../client';
+import { apiClient } from "../client";
 import type {
   APIResponse,
   CollectionResponse,
   CollectionDetailResponse,
   PaginationParams,
   PaginatedResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Get all collections (paginated)
@@ -39,17 +39,17 @@ export async function getAll(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.pageSize !== undefined) {
-    searchParams.append('size', params.pageSize.toString());
+    searchParams.append("size", params.pageSize.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/collections${query ? `?${query}` : ''}`;
+  const endpoint = `/api/v1/collections${query ? `?${query}` : ""}`;
 
   return apiClient.get<PaginatedResponse<CollectionResponse>>(endpoint);
 }
@@ -69,12 +69,12 @@ export async function getAll(
 export async function getById(
   id: string
 ): Promise<APIResponse<CollectionDetailResponse>> {
-  console.log('[collectionAPI.getById] Fetching collection with ID:', id);
+  console.log("[collectionAPI.getById] Fetching collection with ID:", id);
   const endpoint = `/api/v1/collections/${id}`;
-  console.log('[collectionAPI.getById] Endpoint:', endpoint);
+  console.log("[collectionAPI.getById] Endpoint:", endpoint);
 
   const result = await apiClient.get<CollectionDetailResponse>(endpoint);
-  console.log('[collectionAPI.getById] Result:', result);
+  console.log("[collectionAPI.getById] Result:", result);
 
   return result;
 }
@@ -96,18 +96,22 @@ export async function getBySpeaker(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/speakers/${speakerId}/collections${query ? `?${query}` : ''}`;
+  const endpoint = `/api/v1/speakers/${speakerId}/collections${
+    query ? `?${query}` : ""
+  }`;
 
-  console.log('[collectionAPI.getBySpeaker] Calling endpoint:', endpoint);
-  const result = await apiClient.get<PaginatedResponse<CollectionResponse>>(endpoint);
-  console.log('[collectionAPI.getBySpeaker] Result:', result);
+  console.log("[collectionAPI.getBySpeaker] Calling endpoint:", endpoint);
+  const result = await apiClient.get<PaginatedResponse<CollectionResponse>>(
+    endpoint
+  );
+  console.log("[collectionAPI.getBySpeaker] Result:", result);
   return result;
 }
 
@@ -126,13 +130,13 @@ export async function search(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<CollectionResponse>>> {
   const searchParams = new URLSearchParams();
-  searchParams.append('q', query);
+  searchParams.append("q", query);
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   return apiClient.get<PaginatedResponse<CollectionResponse>>(
@@ -148,7 +152,9 @@ export async function search(
  * @example
  * const response = await collectionAPI.getFeatured();
  */
-export async function getFeatured(): Promise<APIResponse<PaginatedResponse<CollectionResponse>>> {
+export async function getFeatured(): Promise<
+  APIResponse<PaginatedResponse<CollectionResponse>>
+> {
   // Fallback: return all collections (backend can add featured endpoint later)
   return getAll({ limit: 20 });
 }

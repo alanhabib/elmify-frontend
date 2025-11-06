@@ -73,18 +73,6 @@ export default function TabsLayout() {
           href: null,
         }}
       />
-      <Tabs.Screen
-        name="index.old"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="browse.old"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }
