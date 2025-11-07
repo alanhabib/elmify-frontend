@@ -164,7 +164,7 @@ export default function Profile() {
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.push("/(protected)/settings")}
+              onPress={() => router.push("/(protected)/(tabs)/settings")}
               className="w-10 h-10 items-center justify-center rounded-full bg-card border border-border"
             >
               <Feather name="settings" size={20} color="#a855f7" />

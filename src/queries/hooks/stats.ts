@@ -144,7 +144,7 @@ export function useTrackListening() {
     },
     // Silently fail tracking errors to not disrupt playback
     onError: (error) => {
-      console.warn("Failed to track listening activity:", error);
+      // Track listening error - non-critical
     },
   });
 }

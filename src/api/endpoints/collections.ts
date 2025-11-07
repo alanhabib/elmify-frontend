@@ -49,7 +49,7 @@ export async function getAll(
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/collections${query ? `?${query}` : ""}`;
+  const endpoint = `/collections${query ? `?${query}` : ""}`;
 
   return apiClient.get<PaginatedResponse<CollectionResponse>>(endpoint);
 }
@@ -69,12 +69,9 @@ export async function getAll(
 export async function getById(
   id: string
 ): Promise<APIResponse<CollectionDetailResponse>> {
-  console.log("[collectionAPI.getById] Fetching collection with ID:", id);
-  const endpoint = `/api/v1/collections/${id}`;
-  console.log("[collectionAPI.getById] Endpoint:", endpoint);
+  const endpoint = `/collections/${id}`;
 
   const result = await apiClient.get<CollectionDetailResponse>(endpoint);
-  console.log("[collectionAPI.getById] Result:", result);
 
   return result;
 }
@@ -103,15 +100,13 @@ export async function getBySpeaker(
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/speakers/${speakerId}/collections${
+  const endpoint = `/speakers/${speakerId}/collections${
     query ? `?${query}` : ""
   }`;
 
-  console.log("[collectionAPI.getBySpeaker] Calling endpoint:", endpoint);
   const result = await apiClient.get<PaginatedResponse<CollectionResponse>>(
     endpoint
   );
-  console.log("[collectionAPI.getBySpeaker] Result:", result);
   return result;
 }
 
@@ -140,7 +135,7 @@ export async function search(
   }
 
   return apiClient.get<PaginatedResponse<CollectionResponse>>(
-    `/api/v1/collections/search?${searchParams.toString()}`
+    `/collections/search?${searchParams.toString()}`
   );
 }
 

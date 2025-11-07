@@ -124,10 +124,16 @@ const getBackgroundColor = (index: number): string => {
 const HeroCard: React.FC<HeroCardInternalProps> = React.memo(
   ({ lecture, onPlay, onPress, backgroundColor }) => {
     const { colors, spacing, radius, typography, shadows } = useTheme();
-    const { lecture: currentLecture, currentTime, duration, isPlaying } = usePlayer();
+    const {
+      lecture: currentLecture,
+      currentTime,
+      duration,
+      isPlaying,
+    } = usePlayer();
 
     // Check if this lecture is currently playing
-    const isCurrentlyPlaying = currentLecture?.id === lecture.lecture?.id?.toString() && isPlaying;
+    const isCurrentlyPlaying =
+      currentLecture?.id === lecture.lecture?.id?.toString() && isPlaying;
 
     // Use live progress if playing, otherwise use saved progress
     const progressPercent = useMemo(() => {
@@ -141,12 +147,19 @@ const HeroCard: React.FC<HeroCardInternalProps> = React.memo(
       const durationSeconds = lecture.lecture?.duration || 0;
 
       if (durationSeconds > 0) {
-        const calculatedProgress = (currentPositionSeconds / durationSeconds) * 100;
+        const calculatedProgress =
+          (currentPositionSeconds / durationSeconds) * 100;
         return Math.min(calculatedProgress, 100); // Cap at 100%
       }
 
       return 0;
-    }, [isCurrentlyPlaying, currentTime, duration, lecture.currentPosition, lecture.lecture?.duration]);
+    }, [
+      isCurrentlyPlaying,
+      currentTime,
+      duration,
+      lecture.currentPosition,
+      lecture.lecture?.duration,
+    ]);
 
     // Calculate remaining time - use live time if currently playing
     const remainingTime = useMemo(() => {
@@ -161,7 +174,6 @@ const HeroCard: React.FC<HeroCardInternalProps> = React.memo(
         lecture.currentPosition,
         lecture.lecture?.duration
       );
-      console.log(`[HeroCard] remainingTime result: ${result}`);
 
       return result;
     }, [
@@ -321,7 +333,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   onLecturePress,
 }) => {
   const { spacing } = useTheme();
-  const { lecture: currentLecture, isPlaying, setLecture, play, pause } = usePlayer();
+  const {
+    lecture: currentLecture,
+    isPlaying,
+    setLecture,
+    play,
+    pause,
+  } = usePlayer();
   const router = useRouter();
 
   // Fetch recent lectures

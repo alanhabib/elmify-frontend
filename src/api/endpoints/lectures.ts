@@ -12,14 +12,14 @@
  * Pattern: All functions return Promise<APIResponse<T>>
  */
 
-import { apiClient } from '../client';
+import { apiClient } from "../client";
 import type {
   APIResponse,
   LectureResponse,
   LectureDetailResponse,
   PaginationParams,
   PaginatedResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Get all lectures (paginated)
@@ -39,17 +39,17 @@ export async function getAll(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.pageSize !== undefined) {
-    searchParams.append('size', params.pageSize.toString());
+    searchParams.append("size", params.pageSize.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/lectures${query ? `?${query}` : ''}`;
+  const endpoint = `/lectures${query ? `?${query}` : ""}`;
 
   return apiClient.get<PaginatedResponse<LectureResponse>>(endpoint);
 }
@@ -69,7 +69,7 @@ export async function getAll(
 export async function getById(
   id: string
 ): Promise<APIResponse<LectureDetailResponse>> {
-  return apiClient.get<LectureDetailResponse>(`/api/v1/lectures/${id}`);
+  return apiClient.get<LectureDetailResponse>(`/lectures/${id}`);
 }
 
 /**
@@ -92,14 +92,16 @@ export async function getByCollection(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/lectures/collection/${collectionId}${query ? `?${query}` : ''}`;
+  const endpoint = `/lectures/collection/${collectionId}${
+    query ? `?${query}` : ""
+  }`;
 
   return apiClient.get<PaginatedResponse<LectureResponse>>(endpoint);
 }
@@ -121,18 +123,18 @@ export async function getBySpeaker(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/speakers/${speakerId}/lectures${query ? `?${query}` : ''}`;
+  const endpoint = `/speakers/${speakerId}/lectures${query ? `?${query}` : ""}`;
 
-  console.log('[lectureAPI.getBySpeaker] Calling endpoint:', endpoint);
-  const result = await apiClient.get<PaginatedResponse<LectureResponse>>(endpoint);
-  console.log('[lectureAPI.getBySpeaker] Result:', result);
+  const result = await apiClient.get<PaginatedResponse<LectureResponse>>(
+    endpoint
+  );
   return result;
 }
 
@@ -151,17 +153,17 @@ export async function search(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<LectureResponse>>> {
   const searchParams = new URLSearchParams();
-  searchParams.append('q', query);
+  searchParams.append("q", query);
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   return apiClient.get<PaginatedResponse<LectureResponse>>(
-    `/api/v1/lectures/search?${searchParams.toString()}`
+    `/lectures/search?${searchParams.toString()}`
   );
 }
 
@@ -179,7 +181,7 @@ export async function getTrending(
   limit: number = 20
 ): Promise<APIResponse<PaginatedResponse<LectureResponse>>> {
   return apiClient.get<PaginatedResponse<LectureResponse>>(
-    `/api/v1/lectures/trending?limit=${limit}`
+    `/lectures/trending?limit=${limit}`
   );
 }
 
@@ -197,7 +199,7 @@ export async function getRecent(
   limit: number = 20
 ): Promise<APIResponse<PaginatedResponse<LectureResponse>>> {
   return apiClient.get<PaginatedResponse<LectureResponse>>(
-    `/api/v1/lectures/recent?limit=${limit}`
+    `/lectures/recent?limit=${limit}`
   );
 }
 

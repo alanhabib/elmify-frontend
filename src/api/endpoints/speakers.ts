@@ -12,14 +12,14 @@
  * Pattern: All functions return Promise<APIResponse<T>>
  */
 
-import { apiClient } from '../client';
+import { apiClient } from "../client";
 import type {
   APIResponse,
   SpeakerResponse,
   SpeakerDetailResponse,
   PaginationParams,
   PaginatedResponse,
-} from '../types';
+} from "../types";
 
 /**
  * Get all speakers (paginated)
@@ -39,17 +39,17 @@ export async function getAll(
   const searchParams = new URLSearchParams();
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.pageSize !== undefined) {
-    searchParams.append('size', params.pageSize.toString());
+    searchParams.append("size", params.pageSize.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/speakers${query ? `?${query}` : ''}`;
+  const endpoint = `/speakers${query ? `?${query}` : ""}`;
 
   return apiClient.get<PaginatedResponse<SpeakerResponse>>(endpoint);
 }
@@ -69,7 +69,7 @@ export async function getAll(
 export async function getById(
   id: string
 ): Promise<APIResponse<SpeakerDetailResponse>> {
-  return apiClient.get<SpeakerDetailResponse>(`/api/v1/speakers/${id}`);
+  return apiClient.get<SpeakerDetailResponse>(`/speakers/${id}`);
 }
 
 /**
@@ -87,17 +87,17 @@ export async function search(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<SpeakerResponse>>> {
   const searchParams = new URLSearchParams();
-  searchParams.append('q', query);
+  searchParams.append("q", query);
 
   if (params?.page !== undefined) {
-    searchParams.append('page', params.page.toString());
+    searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append('limit', params.limit.toString());
+    searchParams.append("limit", params.limit.toString());
   }
 
   return apiClient.get<PaginatedResponse<SpeakerResponse>>(
-    `/api/v1/speakers/search?${searchParams.toString()}`
+    `/speakers/search?${searchParams.toString()}`
   );
 }
 
@@ -110,10 +110,9 @@ export async function search(
  * @example
  * const response = await speakerAPI.getFeatured();
  */
-export async function getFeatured(): Promise<APIResponse<PaginatedResponse<SpeakerResponse>>> {
-  // If your backend has a featured endpoint:
-  // return apiClient.get<PaginatedResponse<SpeakerResponse>>('/api/v1/speakers/featured');
-
+export async function getFeatured(): Promise<
+  APIResponse<PaginatedResponse<SpeakerResponse>>
+> {
   // Fallback: return all speakers (backend can add featured endpoint later)
   return getAll({ limit: 20 });
 }

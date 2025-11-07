@@ -79,21 +79,16 @@ export function useAudioStreamUrl(
   return useQuery({
     queryKey: queryKeys.streaming.audio(lectureId!),
     queryFn: async () => {
-      console.log('[useAudioStreamUrl] Fetching stream URL for lecture:', lectureId);
-
       const response = await streamingAPI.getAudioStreamUrl(lectureId!);
 
       if (response.error || !response.success) {
-        console.error('[useAudioStreamUrl] Failed to get stream URL:', response.error);
         throw new Error(response.error || 'Failed to get audio stream URL');
       }
 
       if (!response.data?.url) {
-        console.error('[useAudioStreamUrl] No URL in response');
         throw new Error('No stream URL returned');
       }
 
-      console.log('[useAudioStreamUrl] Successfully fetched stream URL');
       return response.data.url;
     },
     enabled: enabled && !!lectureId,
@@ -153,22 +148,17 @@ export function useImageStreamUrl(
   return useQuery({
     queryKey: queryKeys.streaming.image(type, id!),
     queryFn: async () => {
-      console.log(`[useImageStreamUrl] Fetching ${type} image URL for ID:`, id);
-
       const response = await streamingAPI.getImageStreamUrl(type, id!);
 
       if (response.error || !response.success) {
-        console.warn(`[useImageStreamUrl] Failed to get ${type} image URL:`, response.error);
         // Return null instead of throwing - allows fallback to placeholder
         return null;
       }
 
       if (!response.data?.url) {
-        console.warn(`[useImageStreamUrl] No ${type} image URL in response`);
         return null;
       }
 
-      console.log(`[useImageStreamUrl] Successfully fetched ${type} image URL`);
       return response.data.url;
     },
     enabled: enabled && !!id,

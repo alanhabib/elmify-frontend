@@ -141,25 +141,17 @@ export function useCollection(
   return useQuery({
     queryKey: queryKeys.collections.detail(id!),
     queryFn: async () => {
-      console.log('[useCollection] queryFn called for ID:', id);
-      console.log('[useCollection] Enabled:', enabled);
-
       // Skip cache lookup and always fetch from API for now
-      console.log('[useCollection] Fetching from API...');
       const response = await collectionAPI.getById(id!);
-      console.log('[useCollection] API Response:', response);
 
       if (response.error || !response.success) {
-        console.error('[useCollection] API Error:', response.error);
         throw new Error(response.error || "Collection not found");
       }
 
       if (!response.data) {
-        console.error('[useCollection] No data in response');
         throw new Error("Collection not found");
       }
 
-      console.log('[useCollection] Success! Collection data:', response.data);
       return response.data;
     },
     enabled,
@@ -189,26 +181,13 @@ export function useCollectionsBySpeaker(
   return useQuery({
     queryKey: queryKeys.collections.bySpeaker(speakerId!, params as any),
     queryFn: async () => {
-      console.log('[useCollectionsBySpeaker] Fetching collections for speaker:', speakerId);
-      console.log('[useCollectionsBySpeaker] Params:', params);
+      const response = await collectionAPI.getBySpeaker(speakerId!, params);
 
-      try {
-        const response = await collectionAPI.getBySpeaker(speakerId!, params);
-
-        console.log('[useCollectionsBySpeaker] Response:', response);
-
-        if (response.error || !response.success) {
-          console.error('[useCollectionsBySpeaker] Failed to fetch speaker collections:', response.error);
-          console.error('[useCollectionsBySpeaker] Full error response:', response);
-          return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
-        }
-
-        console.log('[useCollectionsBySpeaker] Success! Collections data:', response.data);
-        return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
-      } catch (error) {
-        console.error('[useCollectionsBySpeaker] Exception caught:', error);
-        throw error;
+      if (response.error || !response.success) {
+        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
       }
+
+      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
     },
     enabled,
     staleTime: CACHE_TIMES.collections.staleTime,
@@ -237,7 +216,6 @@ export function useFeaturedCollections() {
       const response = await collectionAPI.getFeatured();
 
       if (response.error || !response.success) {
-        console.warn("Failed to fetch featured collections:", response.error);
         return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
       }
 
@@ -277,7 +255,6 @@ export function useSearchCollections(
       const response = await collectionAPI.search(query, params);
 
       if (response.error || !response.success) {
-        console.warn("Search failed:", response.error);
         return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
       }
 

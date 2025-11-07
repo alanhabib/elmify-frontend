@@ -1,7 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
-import { DownloadService, DownloadProgress, DownloadedLecture } from '@/services/DownloadService';
-import { UILecture } from '@/types/ui';
-import { usePlaybackPosition } from '@/queries/hooks/playback';
+import { useState, useCallback, useEffect } from "react";
+import {
+  DownloadService,
+  DownloadProgress,
+  DownloadedLecture,
+} from "@/services/DownloadService";
+import { UILecture } from "@/types/ui";
+import { usePlaybackPosition } from "@/queries/hooks/playback";
 
 type DownloadState = {
   isDownloading: boolean;
@@ -30,21 +34,22 @@ export function useDownload(lectureId: string) {
   }, [lectureId]);
 
   const startDownload = useCallback(async (lecture: UILecture) => {
-    console.log('[useDownload] Starting download for:', lecture.id, lecture.title);
     setState({ isDownloading: true, progress: 0, error: null });
 
     try {
-      const result = await DownloadService.startDownload(lecture, (progress: DownloadProgress) => {
-        console.log('[useDownload] Progress:', progress.progress);
-        setState(prev => ({ ...prev, progress: progress.progress }));
-      });
+      const result = await DownloadService.startDownload(
+        lecture,
+        (progress: DownloadProgress) => {
+          setState((prev) => ({ ...prev, progress: progress.progress }));
+        }
+      );
 
-      console.log('[useDownload] Download completed:', result);
       setIsDownloaded(true);
       setState({ isDownloading: false, progress: 100, error: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Download failed';
-      console.error('[useDownload] Download error:', errorMessage, error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Download failed";
+      console.error("[useDownload] Download error:", errorMessage, error);
       setState({ isDownloading: false, progress: 0, error: errorMessage });
     }
   }, []);
@@ -60,8 +65,9 @@ export function useDownload(lectureId: string) {
       setIsDownloaded(false);
       setState({ isDownloading: false, progress: 0, error: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Delete failed';
-      setState(prev => ({ ...prev, error: errorMessage }));
+      const errorMessage =
+        error instanceof Error ? error.message : "Delete failed";
+      setState((prev) => ({ ...prev, error: errorMessage }));
     }
   }, [lectureId]);
 
@@ -85,17 +91,15 @@ export function useDownloads() {
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshDownloads = useCallback(async () => {
-    console.log('[useDownloads] Refreshing downloads...');
     setIsLoading(true);
     try {
       const allDownloads = await DownloadService.getAllDownloads();
       const totalStorage = await DownloadService.getTotalStorageUsed();
 
-      console.log('[useDownloads] Found downloads:', allDownloads.length, allDownloads);
       setDownloads(allDownloads);
       setStorageUsed(totalStorage);
     } catch (error) {
-      console.error('[useDownloads] Failed to refresh downloads:', error);
+      console.error("[useDownloads] Failed to refresh downloads:", error);
     } finally {
       setIsLoading(false);
     }
@@ -105,13 +109,18 @@ export function useDownloads() {
     refreshDownloads();
   }, [refreshDownloads]);
 
-  const deleteDownload = useCallback(async (lectureId: string) => {
-    await DownloadService.deleteDownload(lectureId);
-    await refreshDownloads();
-  }, [refreshDownloads]);
+  const deleteDownload = useCallback(
+    async (lectureId: string) => {
+      await DownloadService.deleteDownload(lectureId);
+      await refreshDownloads();
+    },
+    [refreshDownloads]
+  );
 
   const deleteAllDownloads = useCallback(async () => {
-    await Promise.all(downloads.map(d => DownloadService.deleteDownload(d.lectureId)));
+    await Promise.all(
+      downloads.map((d) => DownloadService.deleteDownload(d.lectureId))
+    );
     await refreshDownloads();
   }, [downloads, refreshDownloads]);
 

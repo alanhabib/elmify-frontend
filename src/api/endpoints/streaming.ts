@@ -47,20 +47,12 @@ export const streamingAPI = {
   async getAudioStreamUrl(
     lectureId: string
   ): Promise<APIResponse<StreamUrlResponse>> {
-    console.log(
-      "[streamingAPI.getAudioStreamUrl] Fetching audio URL for lecture:",
-      lectureId
-    );
-
     try {
       const result = await apiClient.get<StreamUrlResponse>(
-        `/api/v1/lectures/${lectureId}/stream-url`
+        `/lectures/${lectureId}/stream-url`
       );
-
-      console.log("[streamingAPI.getAudioStreamUrl] Result:", result);
       return result;
     } catch (error) {
-      console.error("[streamingAPI.getAudioStreamUrl] Error:", error);
       return {
         success: false,
         error:
@@ -90,37 +82,24 @@ export const streamingAPI = {
    * ```
    *
    * @todo Backend needs to implement these endpoints:
-   * - GET /api/v1/speakers/{id}/image-url
-   * - GET /api/v1/collections/{id}/image-url
-   * - GET /api/v1/lectures/{id}/thumbnail-url
+   * - GET /speakers/{id}/image-url
+   * - GET /collections/{id}/image-url
+   * - GET /lectures/{id}/thumbnail-url
    */
   async getImageStreamUrl(
     type: "speaker" | "collection" | "lecture",
     id: string
   ): Promise<APIResponse<StreamUrlResponse>> {
-    console.log(
-      `[streamingAPI.getImageStreamUrl] Fetching ${type} image URL for ID:`,
-      id
-    );
-
     try {
       const endpoint =
         type === "lecture"
-          ? `/api/v1/lectures/${id}/thumbnail-url`
-          : `/api/v1/${type}s/${id}/image-url`;
+          ? `/lectures/${id}/thumbnail-url`
+          : `/${type}s/${id}/image-url`;
 
       const result = await apiClient.get<StreamUrlResponse>(endpoint);
 
-      console.log(
-        `[streamingAPI.getImageStreamUrl] ${type} image result:`,
-        result
-      );
       return result;
     } catch (error) {
-      console.warn(
-        `[streamingAPI.getImageStreamUrl] Error fetching ${type} image:`,
-        error
-      );
       return {
         success: false,
         error:

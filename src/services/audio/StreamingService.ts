@@ -27,13 +27,10 @@ export class StreamingService {
     options: StreamingOptions = {}
   ): Promise<string | null> {
     try {
-      console.log('🎵 StreamingService: Getting stream URL for lecture:', lecture.id);
-
       // Check cache first if enabled
       if (options.useCache) {
         const cachedUrl = this.getCachedUrl(lecture.id.toString());
         if (cachedUrl) {
-          console.log('🎵 StreamingService: Using cached URL');
           return cachedUrl;
         }
       }
@@ -42,11 +39,8 @@ export class StreamingService {
       const response = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
 
       if (!response.success || !response.data?.url) {
-        console.error('🎵 StreamingService: Failed to get streaming URL:', response.error);
-
         // Handle authentication errors
         if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
-          console.error('🎵 StreamingService: Authentication failed - token may be expired');
           await AuthManager.handleAuthError(new Error('401 Unauthorized'));
         }
 
@@ -54,7 +48,6 @@ export class StreamingService {
       }
 
       const streamUrl = response.data.url;
-      console.log('🎵 StreamingService: Successfully retrieved streaming URL');
 
       // Cache the URL if enabled
       if (options.useCache) {
@@ -63,7 +56,6 @@ export class StreamingService {
 
       return streamUrl;
     } catch (error) {
-      console.error('🎵 StreamingService error:', error);
       return null;
     }
   }
@@ -81,7 +73,6 @@ export class StreamingService {
         Range: "bytes=0-", // Enable range requests for seeking
       };
     } catch (error) {
-      console.warn("Failed to get streaming headers:", error);
       return {
         Accept: "audio/*",
         Range: "bytes=0-",
@@ -124,7 +115,6 @@ export class StreamingService {
 
       return response.ok;
     } catch (error) {
-      console.warn(`Audio URL validation failed for: ${url}`, error);
       return false;
     }
   }

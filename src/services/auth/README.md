@@ -7,7 +7,7 @@ The enhanced authentication system provides seamless integration between Clerk a
 ## Architecture
 
 - **AuthManager**: Singleton class that manages tokens globally
-- **useAuthManager**: React hook that bridges Clerk with AuthManager  
+- **useAuthManager**: React hook that bridges Clerk with AuthManager
 - **Enhanced APIClient**: Uses AuthManager for all API requests
 
 ## Quick Setup
@@ -16,7 +16,7 @@ The enhanced authentication system provides seamless integration between Clerk a
 
 ```tsx
 // src/app/_layout.tsx or your root component
-import { useAuthManager } from '@/hooks/auth/useAuthManager';
+import { useAuthManager } from "@/hooks/auth/useAuthManager";
 
 export default function RootLayout() {
   // Initialize auth manager with Clerk
@@ -27,11 +27,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}>
+    <ClerkProvider
+      publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+    >
       <QueryProvider>
-        <PlayerProvider>
-          {/* Your app content */}
-        </PlayerProvider>
+        <PlayerProvider>{/* Your app content */}</PlayerProvider>
       </QueryProvider>
     </ClerkProvider>
   );
@@ -41,7 +41,10 @@ export default function RootLayout() {
 ### 2. Use Authentication in Components
 
 ```tsx
-import { useIsAuthenticated, useCurrentUser } from '@/hooks/auth/useAuthManager';
+import {
+  useIsAuthenticated,
+  useCurrentUser,
+} from "@/hooks/auth/useAuthManager";
 
 function ProfileScreen() {
   const isAuthenticated = useIsAuthenticated();
@@ -63,7 +66,7 @@ function ProfileScreen() {
 
 ```tsx
 // All API services now automatically use proper authentication
-import { PlaybackPositionAPI, UserFavoritesAPI } from '@/services/api';
+import { PlaybackPositionAPI, UserFavoritesAPI } from "@/services/api";
 
 function AudioPlayer({ lectureId }: { lectureId: string }) {
   const savePosition = async (position: number) => {
@@ -83,22 +86,26 @@ function AudioPlayer({ lectureId }: { lectureId: string }) {
 ## Features
 
 ### ✅ **Automatic Token Management**
+
 - Fetches tokens from Clerk automatically
 - Handles token refresh behind the scenes
 - Falls back to demo tokens in development
 
 ### ✅ **Seamless API Integration**
+
 - All API services use authenticated requests
 - No manual token handling required
 - Automatic retry on auth errors
 
-### ✅ **Error Handling** 
+### ✅ **Error Handling**
+
 - Detects 401 auth errors
 - Automatically refreshes tokens
 - Retries failed requests once
 - Graceful fallbacks
 
 ### ✅ **Development Support**
+
 - Demo tokens for offline development
 - Detailed logging for debugging
 - Fallback mechanisms
@@ -108,14 +115,13 @@ function AudioPlayer({ lectureId }: { lectureId: string }) {
 ### Manual Token Operations
 
 ```tsx
-import { useAuthUtils } from '@/hooks/auth/useAuthManager';
+import { useAuthUtils } from "@/hooks/auth/useAuthManager";
 
 function AdvancedComponent() {
   const { getToken, refreshToken, clearTokens } = useAuthUtils();
 
   const handleManualRefresh = async () => {
     const newToken = await refreshToken();
-    console.log('New token:', newToken);
   };
 
   const handleLogout = () => {
@@ -128,12 +134,12 @@ function AdvancedComponent() {
 ### Listen to Auth State Changes
 
 ```tsx
-import { AuthManager } from '@/services/auth/authManager';
+import { AuthManager } from "@/services/auth/authManager";
 
 useEffect(() => {
   const unsubscribe = AuthManager.subscribe((state) => {
-    console.log('Auth state changed:', state);
-    
+    console.log("Auth state changed:", state);
+
     if (!state.isAuthenticated) {
       // Handle logout
     }
@@ -150,10 +156,12 @@ The old APIClient demo token system is completely replaced. No code changes requ
 ## Troubleshooting
 
 ### Development Issues
+
 - **"Using demo token"**: Normal in development mode
 - **Auth errors**: Check Clerk configuration and API keys
 
-### Production Issues  
+### Production Issues
+
 - **401 errors**: Verify Clerk secret key in backend
 - **Token refresh fails**: Check Clerk session configuration
 
@@ -163,8 +171,8 @@ Enable detailed auth logging:
 
 ```tsx
 // In development
-console.log('Auth state:', AuthManager.getAuthState());
-console.log('Current token:', await AuthManager.getAccessToken());
+console.log("Auth state:", AuthManager.getAuthState());
+console.log("Current token:", await AuthManager.getAccessToken());
 ```
 
 ## Security Notes

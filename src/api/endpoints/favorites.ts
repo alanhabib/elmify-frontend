@@ -31,7 +31,7 @@ export async function getAll(
   }
 
   const query = searchParams.toString();
-  const endpoint = `/api/v1/favorites${query ? `?${query}` : ''}`;
+  const endpoint = `/favorites${query ? `?${query}` : ''}`;
 
   return apiClient.get<PaginatedResponse<FavoriteResponse>>(endpoint);
 }
@@ -42,7 +42,7 @@ export async function getAll(
 export async function checkFavorite(
   lectureId: string
 ): Promise<APIResponse<FavoriteCheckResponse>> {
-  return apiClient.get<FavoriteCheckResponse>(`/api/v1/favorites/check/${lectureId}`);
+  return apiClient.get<FavoriteCheckResponse>(`/favorites/check/${lectureId}`);
 }
 
 /**
@@ -51,7 +51,7 @@ export async function checkFavorite(
 export async function addFavorite(
   lectureId: string
 ): Promise<APIResponse<FavoriteResponse>> {
-  return apiClient.post<FavoriteResponse>(`/api/v1/favorites/${lectureId}`, {});
+  return apiClient.post<FavoriteResponse>(`/favorites/${lectureId}`, {});
 }
 
 /**
@@ -60,14 +60,14 @@ export async function addFavorite(
 export async function removeFavorite(
   lectureId: string
 ): Promise<APIResponse<void>> {
-  return apiClient.delete<void>(`/api/v1/favorites/${lectureId}`);
+  return apiClient.delete<void>(`/favorites/${lectureId}`);
 }
 
 /**
  * Get total favorites count
  */
 export async function getCount(): Promise<APIResponse<FavoriteCountResponse>> {
-  return apiClient.get<FavoriteCountResponse>('/api/v1/favorites/count');
+  return apiClient.get<FavoriteCountResponse>('/favorites/count');
 }
 
 /**

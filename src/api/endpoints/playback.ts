@@ -18,14 +18,14 @@ import type {
 export async function getPosition(
   lectureId: string
 ): Promise<APIResponse<PlaybackPositionResponse>> {
-  return apiClient.get<PlaybackPositionResponse>(`/api/v1/playback/${lectureId}`);
+  return apiClient.get<PlaybackPositionResponse>(`/playback/${lectureId}`);
 }
 
 /**
  * Get all playback positions for the authenticated user
  */
 export async function getAllPositions(): Promise<APIResponse<PlaybackPositionResponse[]>> {
-  return apiClient.get<PlaybackPositionResponse[]>('/api/v1/playback');
+  return apiClient.get<PlaybackPositionResponse[]>('/playback');
 }
 
 /**
@@ -33,7 +33,7 @@ export async function getAllPositions(): Promise<APIResponse<PlaybackPositionRes
  * Returns positions where currentPosition > 0 and < duration
  */
 export async function getContinueListening(): Promise<APIResponse<PlaybackPositionResponse[]>> {
-  return apiClient.get<PlaybackPositionResponse[]>('/api/v1/playback/continue-listening');
+  return apiClient.get<PlaybackPositionResponse[]>('/playback/continue-listening');
 }
 
 /**
@@ -44,7 +44,7 @@ export async function getRecentLectures(
   limit: number = 10
 ): Promise<APIResponse<PlaybackPositionWithLectureResponse[]>> {
   return apiClient.get<PlaybackPositionWithLectureResponse[]>(
-    `/api/v1/playback/recent?limit=${limit}`
+    `/playback/recent?limit=${limit}`
   );
 }
 
@@ -56,7 +56,7 @@ export async function updatePosition(
   currentPosition: number
 ): Promise<APIResponse<PlaybackPositionResponse>> {
   return apiClient.put<PlaybackPositionResponse>(
-    `/api/v1/playback/${lectureId}`,
+    `/playback/${lectureId}`,
     { currentPosition }
   );
 }
@@ -67,7 +67,7 @@ export async function updatePosition(
 export async function deletePosition(
   lectureId: string
 ): Promise<APIResponse<void>> {
-  return apiClient.delete<void>(`/api/v1/playback/${lectureId}`);
+  return apiClient.delete<void>(`/playback/${lectureId}`);
 }
 
 /**

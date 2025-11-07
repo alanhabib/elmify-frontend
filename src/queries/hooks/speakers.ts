@@ -138,32 +138,18 @@ export function useSpeaker(
   return useQuery({
     queryKey: queryKeys.speakers.detail(id!),
     queryFn: async () => {
-      console.log('[useSpeaker] Fetching speaker with id:', id);
+      // Fetch from API directly (skip cache optimization for now)
+      const response = await speakerAPI.getById(id!);
 
-      try {
-        // Fetch from API directly (skip cache optimization for now)
-        console.log('[useSpeaker] Fetching from API...');
-        const response = await speakerAPI.getById(id!);
-
-        console.log('[useSpeaker] API Response:', response);
-
-        if (response.error || !response.success) {
-          console.error('[useSpeaker] API Error:', response.error);
-          console.error('[useSpeaker] Full error response:', response);
-          throw new Error(response.error || "Speaker not found");
-        }
-
-        if (!response.data) {
-          console.error('[useSpeaker] No data in response');
-          throw new Error("Speaker not found");
-        }
-
-        console.log('[useSpeaker] Success! Speaker data:', response.data);
-        return response.data;
-      } catch (error) {
-        console.error('[useSpeaker] Exception caught:', error);
-        throw error;
+      if (response.error || !response.success) {
+        throw new Error(response.error || "Speaker not found");
       }
+
+      if (!response.data) {
+        throw new Error("Speaker not found");
+      }
+
+      return response.data;
     },
     enabled,
     staleTime: CACHE_TIMES.speakers.staleTime,
@@ -190,7 +176,6 @@ export function useFeaturedSpeakers() {
       const response = await speakerAPI.getFeatured();
 
       if (response.error || !response.success) {
-        console.warn("Failed to fetch featured speakers:", response.error);
         return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
       }
 
@@ -235,7 +220,6 @@ export function useSearchSpeakers(
       const response = await speakerAPI.search(query, params);
 
       if (response.error || !response.success) {
-        console.warn("Search failed:", response.error);
         return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
       }
 

@@ -55,7 +55,9 @@ export class APIClient {
    */
   private async getAuthHeaders(): Promise<Record<string, string>> {
     try {
-      return await AuthManager.getAuthHeaders();
+      const headers = await AuthManager.getAuthHeaders();
+
+      return headers;
     } catch (error) {
       throw new Error(
         `Authentication failed: ${
@@ -103,6 +105,8 @@ export class APIClient {
 
         // Handle non-OK responses
         if (!response.ok) {
+          const errorText = await response.text();
+
           // Special handling for auth errors
           if (response.status === 401) {
             if (attempt === 0) {
@@ -114,7 +118,6 @@ export class APIClient {
             }
           }
 
-          const errorText = await response.text();
           throw new Error(
             `HTTP ${response.status}: ${response.statusText} - ${
               errorText || "No error details"
@@ -234,7 +237,7 @@ export class APIClient {
  */
 export const API_CONFIG: Record<string, APIConfig> = {
   development: {
-    baseURL: "http://localhost:8081",
+    baseURL: API_BASE_URL, // Use env variable (respects .env.local)
     timeout: 10000, // 10s for dev
     retries: 2,
   },

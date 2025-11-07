@@ -13,11 +13,14 @@ import { TrackPlayerService } from "@/services/audio/TrackPlayerService";
 import { StreamingService } from "@/services/audio/StreamingService";
 import { UILecture } from "@/types/ui";
 import * as FileSystem from "expo-file-system";
-import { usePlaybackPosition, useUpdatePosition } from "@/queries/hooks/playback";
+import {
+  usePlaybackPosition,
+  useUpdatePosition,
+} from "@/queries/hooks/playback";
 import { useTrackListening } from "@/queries/hooks/stats";
 import { useTrackPlayer } from "@/hooks/useTrackPlayer";
 
-type RepeatMode = 'off' | 'one' | 'all';
+type RepeatMode = "off" | "one" | "all";
 
 type PlayerContextType = {
   lecture: UILecture | null;
@@ -52,9 +55,11 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const [error, setError] = useState<string | null>(null);
   const [queue, setQueue] = useState<UILecture[]>([]);
   const [shuffle, setShuffle] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const [sleepTimer, setSleepTimer] = useState<number | null>(null);
-  const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
+  const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(
+    null
+  );
 
   const positionSyncInterval = useRef<NodeJS.Timeout | null>(null);
   const statsTrackingInterval = useRef<NodeJS.Timeout | null>(null);
@@ -64,49 +69,56 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const currentLectureId = useRef<string | null>(null);
 
   // Fetch saved playback position
-  const { data: savedPosition, isLoading: isPositionLoading } = usePlaybackPosition(lecture?.id?.toString());
+  const { data: savedPosition, isLoading: isPositionLoading } =
+    usePlaybackPosition(lecture?.id?.toString());
   const updatePositionMutation = useUpdatePosition();
   const trackListeningMutation = useTrackListening();
 
   // Use track player hook
   const trackPlayer = useTrackPlayer();
 
-  const loadLecture = useCallback(async (startPosition: number = 0) => {
-    if (!lecture) return;
+  const loadLecture = useCallback(
+    async (startPosition: number = 0) => {
+      if (!lecture) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    // Clear intervals
-    if (positionSyncInterval.current) clearInterval(positionSyncInterval.current);
-    if (statsTrackingInterval.current) clearInterval(statsTrackingInterval.current);
+      // Clear intervals
+      if (positionSyncInterval.current)
+        clearInterval(positionSyncInterval.current);
+      if (statsTrackingInterval.current)
+        clearInterval(statsTrackingInterval.current);
 
-    try {
-      // Check for local file first
-      const localUri = await getLocalAudioUri();
-      const audioUrl = localUri || await getStreamingUrl();
+      try {
+        // Check for local file first
+        const localUri = await getLocalAudioUri();
+        const audioUrl = localUri || (await getStreamingUrl());
 
-      if (!audioUrl) {
-        throw new Error("No audio source available");
+        if (!audioUrl) {
+          throw new Error("No audio source available");
+        }
+
+        // Create lecture with proper URL
+        const lectureWithUrl: UILecture = {
+          ...lecture,
+          audio_url: audioUrl,
+        };
+
+        // Load and play with start position
+        await TrackPlayerService.loadAndPlay(lectureWithUrl, startPosition);
+
+        setIsLoading(false);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load audio";
+        console.error("❌ PlayerProvider error:", errorMessage);
+        setError(errorMessage);
+        setIsLoading(false);
       }
-
-      // Create lecture with proper URL
-      const lectureWithUrl: UILecture = {
-        ...lecture,
-        audio_url: audioUrl,
-      };
-
-      // Load and play with start position
-      await TrackPlayerService.loadAndPlay(lectureWithUrl, startPosition);
-
-      setIsLoading(false);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load audio";
-      console.error("❌ PlayerProvider error:", errorMessage);
-      setError(errorMessage);
-      setIsLoading(false);
-    }
-  }, [lecture]);
+    },
+    [lecture]
+  );
 
   // Load new lecture when lecture changes
   useEffect(() => {
@@ -139,7 +151,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
           await TrackPlayerService.seekTo(startPosition);
         }
       } catch (error) {
-        console.log("Position update warning:", error);
+        console.error("Position update warning:", error);
       }
     };
 
@@ -167,7 +179,10 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const savePosition = (positionMs: number) => {
     if (!lecture || positionMs === lastSavedPosition.current) return;
 
-    if (positionMs > 0 && Math.abs(positionMs - lastSavedPosition.current) > 1000) {
+    if (
+      positionMs > 0 &&
+      Math.abs(positionMs - lastSavedPosition.current) > 1000
+    ) {
       lastSavedPosition.current = positionMs;
       updatePositionMutation.mutate({
         lectureId: lecture.id.toString(),
@@ -284,7 +299,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
               });
             }
           } catch (error) {
-            console.log("Final position save warning:", error);
+            console.error("Final position save warning:", error);
           }
         }
       };
@@ -294,21 +309,24 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Handle app going to background
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", async (nextAppState) => {
-      if (nextAppState === "background" && lecture && !isCleaningUp.current) {
-        try {
-          const position = await TrackPlayerService.getPosition();
-          if (position > 0) {
-            updatePositionMutation.mutate({
-              lectureId: lecture.id.toString(),
-              currentPosition: Math.floor(position * 1000),
-            });
+    const subscription = AppState.addEventListener(
+      "change",
+      async (nextAppState) => {
+        if (nextAppState === "background" && lecture && !isCleaningUp.current) {
+          try {
+            const position = await TrackPlayerService.getPosition();
+            if (position > 0) {
+              updatePositionMutation.mutate({
+                lectureId: lecture.id.toString(),
+                currentPosition: Math.floor(position * 1000),
+              });
+            }
+          } catch (error) {
+            console.error("Background position save warning:", error);
           }
-        } catch (error) {
-          console.log("Background position save warning:", error);
         }
       }
-    });
+    );
 
     return () => {
       subscription.remove();
@@ -324,12 +342,12 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const playNext = async () => {
     if (queue.length === 0) return;
 
-    const currentIndex = queue.findIndex(l => l.id === lecture?.id);
+    const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
     const nextIndex = currentIndex + 1;
 
     if (nextIndex < queue.length) {
       setLecture(queue[nextIndex]);
-    } else if (repeatMode === 'all') {
+    } else if (repeatMode === "all") {
       setLecture(queue[0]);
     }
   };
@@ -337,12 +355,12 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const playPrevious = async () => {
     if (queue.length === 0) return;
 
-    const currentIndex = queue.findIndex(l => l.id === lecture?.id);
+    const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
     const previousIndex = currentIndex - 1;
 
     if (previousIndex >= 0) {
       setLecture(queue[previousIndex]);
-    } else if (repeatMode === 'all') {
+    } else if (repeatMode === "all") {
       setLecture(queue[queue.length - 1]);
     }
   };
@@ -352,7 +370,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   };
 
   const cycleRepeatMode = async () => {
-    const modes: RepeatMode[] = ['off', 'one', 'all'];
+    const modes: RepeatMode[] = ["off", "one", "all"];
     const currentIndex = modes.indexOf(repeatMode);
     const nextIndex = (currentIndex + 1) % modes.length;
     const newMode = modes[nextIndex];
@@ -362,7 +380,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Auto-play next when current finishes
   useTrackPlayerEvents([Event.PlaybackQueueEnded], () => {
-    if (repeatMode === 'one') {
+    if (repeatMode === "one") {
       TrackPlayerService.seekTo(0);
       TrackPlayerService.play();
     } else {

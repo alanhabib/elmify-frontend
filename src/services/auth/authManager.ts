@@ -69,11 +69,7 @@ class AuthManagerClass {
         if (token) {
           this.tokens.accessToken = token;
           return token;
-        } else {
-          console.warn("⚠️ AuthManager: No JWT token received from Clerk");
         }
-      } else {
-        console.warn("⚠️ AuthManager: No token getter available");
       }
 
       // Only fall back to demo token in development when no token getter is available
@@ -84,8 +80,6 @@ class AuthManagerClass {
 
       return this.tokens.accessToken;
     } catch (error) {
-      console.error("Failed to get access token:", error);
-
       // Return demo token in development as fallback only if no token getter
       if (__DEV__ && !this.tokenGetter) {
         return "demo-token";
@@ -132,7 +126,6 @@ class AuthManagerClass {
       this.notifyListeners();
       return null;
     } catch (error) {
-      console.error("Token refresh failed:", error);
       this.tokens.accessToken = null;
       this.notifyListeners();
       return null;
@@ -225,7 +218,7 @@ class AuthManagerClass {
       try {
         listener(state);
       } catch (error) {
-        console.error("Auth listener error:", error);
+        // Listener error - continue with other listeners
       }
     });
   }
@@ -234,8 +227,6 @@ class AuthManagerClass {
    * Handle authentication errors (like 401 responses)
    */
   async handleAuthError(error: any): Promise<void> {
-    console.warn("Authentication error occurred:", error);
-
     // Try to refresh token once
     const newToken = await this.refreshAccessToken();
 

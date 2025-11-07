@@ -22,9 +22,6 @@ function isAbsoluteUrl(url: string): boolean {
  */
 export function ensureAbsoluteUrl(path: string, baseUrl: string = MEDIA_BASE_URL): string {
   if (!path) {
-    if (ENABLE_MEDIA_LOGGING) {
-      console.warn('⚠️ Empty path provided to ensureAbsoluteUrl');
-    }
     return '';
   }
 
@@ -36,13 +33,12 @@ export function ensureAbsoluteUrl(path: string, baseUrl: string = MEDIA_BASE_URL
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   const absoluteUrl = `${baseUrl}/${cleanPath}`;
 
-
   return absoluteUrl;
 }
 
 /**
  * Build image URL with fallback support
- * Images are stored in MinIO, so we use MINIO_BASE_URL for image assets
+ * Backend returns presigned URLs - use them as-is (best practice)
  */
 export function buildImageUrl(imagePath: string, fallbackUrl?: string): string {
   if (!imagePath) {
@@ -53,7 +49,13 @@ export function buildImageUrl(imagePath: string, fallbackUrl?: string): string {
     return getDefaultImageFallback();
   }
 
-  // Use MinIO URL for images stored in object storage
+  // If backend returned a presigned URL (starts with http/https), use it as-is
+  // This is the recommended pattern: backend owns storage logic, frontend just displays
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+
+  // Fallback: only build URL if it's a relative path (shouldn't happen with presigned URLs)
   return ensureAbsoluteUrl(imagePath, MINIO_BASE_URL);
 }
 
@@ -62,14 +64,10 @@ export function buildImageUrl(imagePath: string, fallbackUrl?: string): string {
  */
 export function buildAudioUrl(lectureId: string): string {
   if (!lectureId) {
-    if (ENABLE_MEDIA_LOGGING) {
-      console.warn('⚠️ Empty lectureId provided to buildAudioUrl');
-    }
     return '';
   }
 
   const audioUrl = `${STREAM_BASE_URL}/stream/${lectureId}`;
-
 
   return audioUrl;
 }

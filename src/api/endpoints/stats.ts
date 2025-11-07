@@ -48,7 +48,7 @@ export interface TrackListeningRequest {
  * Returns today's listening progress and goal status
  */
 export async function getDailySummary(): Promise<APIResponse<DailySummaryResponse>> {
-  return apiClient.get<DailySummaryResponse>("/api/v1/stats/daily-summary");
+  return apiClient.get<DailySummaryResponse>("/stats/daily-summary");
 }
 
 /**
@@ -56,7 +56,7 @@ export async function getDailySummary(): Promise<APIResponse<DailySummaryRespons
  * Streaks are calculated based on consecutive days of meeting daily goals
  */
 export async function getStreaks(): Promise<APIResponse<StreakResponse>> {
-  return apiClient.get<StreakResponse>("/api/v1/stats/streaks");
+  return apiClient.get<StreakResponse>("/stats/streaks");
 }
 
 /**
@@ -64,7 +64,7 @@ export async function getStreaks(): Promise<APIResponse<StreakResponse>> {
  * Returns day-by-day listening progress
  */
 export async function getWeeklyProgress(): Promise<APIResponse<WeeklyProgressResponse>> {
-  return apiClient.get<WeeklyProgressResponse>("/api/v1/stats/weekly-progress");
+  return apiClient.get<WeeklyProgressResponse>("/stats/weekly-progress");
 }
 
 /**
@@ -74,5 +74,5 @@ export async function getWeeklyProgress(): Promise<APIResponse<WeeklyProgressRes
 export async function trackListening(
   data: TrackListeningRequest
 ): Promise<APIResponse<void>> {
-  return apiClient.post<void>("/api/v1/stats/track", data);
+  return apiClient.post<void>("/stats/track", data);
 }

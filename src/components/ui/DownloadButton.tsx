@@ -1,13 +1,13 @@
-import React from 'react';
-import { Pressable, ActivityIndicator, View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useDownload } from '@/hooks/useDownload';
-import { UILecture } from '@/types/ui';
+import React from "react";
+import { Pressable, ActivityIndicator, View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useDownload } from "@/hooks/useDownload";
+import { UILecture } from "@/types/ui";
 
 interface DownloadButtonProps {
   lecture: UILecture;
-  size?: 'small' | 'medium' | 'large';
-  variant?: 'icon' | 'icon-with-progress';
+  size?: "small" | "medium" | "large";
+  variant?: "icon" | "icon-with-progress";
   onDownloadStart?: () => void;
   onDownloadComplete?: () => void;
   onDownloadError?: (error: string) => void;
@@ -15,8 +15,8 @@ interface DownloadButtonProps {
 
 export const DownloadButton: React.FC<DownloadButtonProps> = ({
   lecture,
-  size = 'medium',
-  variant = 'icon',
+  size = "medium",
+  variant = "icon",
   onDownloadStart,
   onDownloadComplete,
   onDownloadError,
@@ -58,31 +58,24 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
     const lectureData: UILecture = {
       id: lecture.id,
       title: lecture.title,
-      author: lecture.author || lecture.speaker || '',
-      audio_url: lecture.audio_url || lecture.filePath || '',
+      author: lecture.author || lecture.speaker || "",
+      audio_url: lecture.audio_url || lecture.filePath || "",
       thumbnail_url: lecture.thumbnail_url,
       duration: lecture.duration,
     };
 
-    console.log('[DownloadButton] Starting download:', {
-      id: lectureData.id,
-      title: lectureData.title,
-      audio_url: lectureData.audio_url,
-    });
-
     try {
       await startDownload(lectureData);
-      console.log('[DownloadButton] Download completed:', lectureData.id);
       onDownloadComplete?.();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Download failed';
-      console.error('[DownloadButton] Download failed:', errorMsg, err);
+      const errorMsg = err instanceof Error ? err.message : "Download failed";
+      console.error("[DownloadButton] Download failed:", errorMsg, err);
       onDownloadError?.(errorMsg);
     }
   };
 
   // Render download progress with circular progress indicator
-  if (isDownloading && variant === 'icon-with-progress') {
+  if (isDownloading && variant === "icon-with-progress") {
     return (
       <Pressable onPress={handlePress}>
         <View
@@ -98,7 +91,10 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
           </View>
 
           {/* Progress percentage */}
-          <Text className="text-xs text-foreground font-semibold" style={{ fontSize: 10 }}>
+          <Text
+            className="text-xs text-foreground font-semibold"
+            style={{ fontSize: 10 }}
+          >
             {Math.round(progress)}%
           </Text>
         </View>

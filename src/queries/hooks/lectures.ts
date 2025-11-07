@@ -16,10 +16,7 @@
  * @see https://tanstack.com/query/latest/docs/react/guides/queries
  */
 
-import {
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { lectureAPI } from "@/api/endpoints/lectures";
 import { queryKeys } from "@/queries/keys";
 import { CACHE_TIMES } from "@/queries/client";
@@ -116,7 +113,19 @@ export function useLectures(options: UseLecturesOptions = {}) {
         throw new Error(response.error || "Failed to fetch lectures");
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.lectures.staleTime,
@@ -175,21 +184,16 @@ export function useLecture(
       }
 
       // Not in cache, fetch from API
-      console.log('[useLecture] Fetching lecture from API:', id);
       const response = await lectureAPI.getById(id!);
-      console.log('[useLecture] API response:', response);
 
       if (response.error || !response.success) {
-        console.error('[useLecture] Error:', response.error);
         throw new Error(response.error || "Lecture not found");
       }
 
       if (!response.data) {
-        console.error('[useLecture] No data in response');
         throw new Error("Lecture not found");
       }
 
-      console.log('[useLecture] Success! Lecture data:', response.data);
       return response.data;
     },
     enabled,
@@ -222,11 +226,32 @@ export function useLecturesByCollection(
       const response = await lectureAPI.getByCollection(collectionId!, params);
 
       if (response.error || !response.success) {
-        console.warn("Failed to fetch collection lectures:", response.error);
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.lectures.staleTime,
@@ -257,26 +282,35 @@ export function useLecturesBySpeaker(
   return useQuery({
     queryKey: queryKeys.lectures.bySpeaker(speakerId!),
     queryFn: async () => {
-      console.log('[useLecturesBySpeaker] Fetching lectures for speaker:', speakerId);
-      console.log('[useLecturesBySpeaker] Params:', params);
+      const response = await lectureAPI.getBySpeaker(speakerId!, params);
 
-      try {
-        const response = await lectureAPI.getBySpeaker(speakerId!, params);
-
-        console.log('[useLecturesBySpeaker] Response:', response);
-
-        if (response.error || !response.success) {
-          console.error('[useLecturesBySpeaker] Failed to fetch speaker lectures:', response.error);
-          console.error('[useLecturesBySpeaker] Full error response:', response);
-          return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
-        }
-
-        console.log('[useLecturesBySpeaker] Success! Lectures data:', response.data);
-        return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
-      } catch (error) {
-        console.error('[useLecturesBySpeaker] Exception caught:', error);
-        throw error;
+      if (response.error || !response.success) {
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
+
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.lectures.staleTime,
@@ -307,11 +341,32 @@ export function useTrendingLectures(options: UseTrendingLecturesOptions = {}) {
       const response = await lectureAPI.getTrending(limit);
 
       if (response.error || !response.success) {
-        console.warn("Failed to fetch trending lectures:", response.error);
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.lectures.staleTime,
@@ -342,11 +397,32 @@ export function useRecentLectures(options: UseTrendingLecturesOptions = {}) {
       const response = await lectureAPI.getRecent(limit);
 
       if (response.error || !response.success) {
-        console.warn("Failed to fetch recent lectures:", response.error);
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.lectures.staleTime,
@@ -383,11 +459,32 @@ export function useSearchLectures(
       const response = await lectureAPI.search(query, params);
 
       if (response.error || !response.success) {
-        console.warn("Search failed:", response.error);
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes for search results

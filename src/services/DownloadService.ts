@@ -1,12 +1,12 @@
-import { File, Directory, Paths } from 'expo-file-system';
-import * as FileSystem from 'expo-file-system';
-import * as LegacyFileSystem from 'expo-file-system/legacy';
-import { StreamingService } from './audio/StreamingService';
-import { UILecture } from '@/types/ui';
-import { DOWNLOAD_CONFIG, DOWNLOAD_ERRORS } from './DownloadService.constants';
-import { DownloadStreamReader } from './download/DownloadStreamReader';
-import { DownloadValidator } from './download/DownloadValidator';
-import { FileSystemHelper } from './download/FileSystemHelper';
+import { File, Directory, Paths } from "expo-file-system";
+import * as FileSystem from "expo-file-system";
+import * as LegacyFileSystem from "expo-file-system/legacy";
+import { StreamingService } from "./audio/StreamingService";
+import { UILecture } from "@/types/ui";
+import { DOWNLOAD_CONFIG, DOWNLOAD_ERRORS } from "./DownloadService.constants";
+import { DownloadStreamReader } from "./download/DownloadStreamReader";
+import { DownloadValidator } from "./download/DownloadValidator";
+import { FileSystemHelper } from "./download/FileSystemHelper";
 
 export type DownloadProgress = {
   lectureId: string;
@@ -31,14 +31,20 @@ export type DownloadedLecture = {
  * Service to handle lecture downloads with proper separation of concerns
  */
 export class DownloadService {
-  private static DOWNLOAD_DIR = new Directory(Paths.document, DOWNLOAD_CONFIG.DIRECTORY_NAME);
+  private static DOWNLOAD_DIR = new Directory(
+    Paths.document,
+    DOWNLOAD_CONFIG.DIRECTORY_NAME
+  );
   private static activeDownloads = new Map<string, AbortController>();
 
   /**
    * Get local file for a lecture
    */
   static getLocalFile(lectureId: string): File {
-    return new File(this.DOWNLOAD_DIR, `${lectureId}${DOWNLOAD_CONFIG.FILE_EXTENSION}`);
+    return new File(
+      this.DOWNLOAD_DIR,
+      `${lectureId}${DOWNLOAD_CONFIG.FILE_EXTENSION}`
+    );
   }
 
   /**
@@ -62,14 +68,16 @@ export class DownloadService {
       const metadataFile = this.getMetadataFile(lecture.id);
       await metadataFile.write(JSON.stringify(metadata));
     } catch (error) {
-      console.warn('Failed to save download metadata:', error);
+      // Metadata save failed - non-critical
     }
   }
 
   /**
    * Load lecture metadata
    */
-  static async loadMetadata(lectureId: string): Promise<Partial<UILecture> | null> {
+  static async loadMetadata(
+    lectureId: string
+  ): Promise<Partial<UILecture> | null> {
     try {
       const metadataFile = this.getMetadataFile(lectureId);
       const content = await metadataFile.text();
@@ -96,7 +104,10 @@ export class DownloadService {
   /**
    * Get downloaded lecture info
    */
-  static async getDownloadedLecture(lectureId: string, fileInfo?: any): Promise<DownloadedLecture | null> {
+  static async getDownloadedLecture(
+    lectureId: string,
+    fileInfo?: any
+  ): Promise<DownloadedLecture | null> {
     try {
       const file = this.getLocalFile(lectureId);
 
@@ -125,7 +136,6 @@ export class DownloadService {
         duration: metadata?.duration || 0,
       };
     } catch (error) {
-      console.log('[DownloadService] getDownloadedLecture failed for', lectureId, error);
       return null;
     }
   }
@@ -139,10 +149,11 @@ export class DownloadService {
   ): Promise<DownloadedLecture> {
     const lectureId = lecture.id;
 
-    console.log('[DownloadService] Starting download for lecture:', lectureId);
-
     // Validate download can proceed
-    const validation = await DownloadValidator.validateDownload(lectureId, this.activeDownloads);
+    const validation = await DownloadValidator.validateDownload(
+      lectureId,
+      this.activeDownloads
+    );
     if (!validation.canProceed) {
       throw new Error(validation.reason);
     }
@@ -156,22 +167,20 @@ export class DownloadService {
       throw new Error(DOWNLOAD_ERRORS.NO_STREAMING_URL);
     }
 
-    console.log('[DownloadService] Got streaming URL:', streamingUrl);
-
     const file = this.getLocalFile(lectureId);
     const abortController = new AbortController();
     this.activeDownloads.set(lectureId, abortController);
 
     try {
-      console.log('[DownloadService] Downloading to:', file.uri);
-
       // Use legacy API for progress tracking support
       const downloadResumable = LegacyFileSystem.createDownloadResumable(
         streamingUrl,
         file.uri,
         {},
         (downloadProgress) => {
-          const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+          const progress =
+            downloadProgress.totalBytesWritten /
+            downloadProgress.totalBytesExpectedToWrite;
           onProgress?.({
             lectureId,
             totalBytes: downloadProgress.totalBytesExpectedToWrite,
@@ -183,25 +192,19 @@ export class DownloadService {
 
       // Start download
       const result = await downloadResumable.downloadAsync();
-      console.log('[DownloadService] Download completed:', result);
-      console.log('[DownloadService] File saved to:', result?.uri);
 
       if (!result) {
-        throw new Error('Download failed - no result');
+        throw new Error("Download failed - no result");
       }
-
-      // Verify file was actually saved
-      console.log('[DownloadService] Verifying file exists at:', file.uri);
 
       // Save metadata
       await this.saveMetadata(lecture);
-      console.log('[DownloadService] Metadata saved for:', lectureId);
 
       this.activeDownloads.delete(lectureId);
 
       // Get file size from download result headers (Content-Length)
-      const fileSize = result.headers?.['Content-Length']
-        ? parseInt(result.headers['Content-Length'], 10)
+      const fileSize = result.headers?.["Content-Length"]
+        ? parseInt(result.headers["Content-Length"], 10)
         : 0;
 
       return {
@@ -214,7 +217,6 @@ export class DownloadService {
         thumbnail_url: lecture.thumbnail_url,
       };
     } catch (error) {
-      console.error('[DownloadService] Download error:', error);
       this.activeDownloads.delete(lectureId);
       await FileSystemHelper.safeDelete(file);
       throw error;
@@ -250,27 +252,30 @@ export class DownloadService {
    */
   static async getAllDownloads(): Promise<DownloadedLecture[]> {
     try {
-      console.log('[DownloadService] getAllDownloads - checking directory:', this.DOWNLOAD_DIR.uri);
       await FileSystemHelper.ensureDirectoryExists(this.DOWNLOAD_DIR);
 
       // Get full file info objects instead of just filenames
       const allFiles = await this.DOWNLOAD_DIR.list();
-      const mp3Files = allFiles.filter(file => file.uri.endsWith(DOWNLOAD_CONFIG.FILE_EXTENSION));
-      console.log('[DownloadService] Found mp3 files:', mp3Files.length);
+      const mp3Files = allFiles.filter((file) =>
+        file.uri.endsWith(DOWNLOAD_CONFIG.FILE_EXTENSION)
+      );
 
       const downloads = await Promise.all(
         mp3Files.map(async (fileInfo) => {
-          const fileName = fileInfo.uri.split('/').pop() || '';
-          const lectureId = fileName.replace(DOWNLOAD_CONFIG.FILE_EXTENSION, '');
+          const fileName = fileInfo.uri.split("/").pop() || "";
+          const lectureId = fileName.replace(
+            DOWNLOAD_CONFIG.FILE_EXTENSION,
+            ""
+          );
           return this.getDownloadedLecture(lectureId, fileInfo);
         })
       );
 
-      const validDownloads = downloads.filter((d): d is DownloadedLecture => d !== null);
-      console.log('[DownloadService] Valid downloads:', validDownloads.length);
+      const validDownloads = downloads.filter(
+        (d): d is DownloadedLecture => d !== null
+      );
       return validDownloads;
     } catch (error) {
-      console.error('[DownloadService] getAllDownloads error:', error);
       return [];
     }
   }
@@ -287,9 +292,9 @@ export class DownloadService {
    * Format bytes to human readable format
    */
   static formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
   }

@@ -76,7 +76,7 @@ export interface UserPreferences {
  * Returns authenticated user's profile including preferences
  */
 export async function getCurrentUser(): Promise<APIResponse<UserResponse>> {
-  return apiClient.get<UserResponse>("/api/v1/users/me");
+  return apiClient.get<UserResponse>("/users/me");
 }
 
 /**
@@ -86,5 +86,5 @@ export async function getCurrentUser(): Promise<APIResponse<UserResponse>> {
 export async function updatePreferences(
   preferences: UserPreferences
 ): Promise<APIResponse<UserResponse>> {
-  return apiClient.put<UserResponse>("/api/v1/users/me/preferences", preferences);
+  return apiClient.put<UserResponse>("/users/me/preferences", preferences);
 }

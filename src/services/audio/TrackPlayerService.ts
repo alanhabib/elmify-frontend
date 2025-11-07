@@ -52,7 +52,6 @@ export class TrackPlayerService {
 
       this.isSetup = true;
     } catch (error) {
-      console.error('Failed to setup track player:', error);
       throw error;
     }
   }
