@@ -103,3 +103,4 @@ temp/
 
 # Generated files
 *.generated.*
+backup/

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Elmify",
-    "slug": "Elmify",
+    "slug": "elmify",
     "scheme": "elmify",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,8 +16,44 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vadinsavin.Elmify",
+      "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["audio"],
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized content to you.",
+        "CFBundleDisplayName": "Elmify",
+        "CFBundleName": "Elmify"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          }
+        ],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          }
+        ]
       }
     },
     "android": {
@@ -54,6 +90,12 @@
       "eas": {
         "projectId": "f21ca744-1612-4fd4-b0e1-8feb4a590611"
       }
-    }
+    },
+    "privacy": "public",
+    "primaryColor": "#8b5cf6",
+    "description": "Elmify - Your premium educational lecture platform. Listen to expert lectures anytime, anywhere. Download for offline listening and track your learning progress.",
+    "githubUrl": "https://github.com/vadinsavin/elmify",
+    "privacyPolicyUrl": "https://www.elmify.store/privacy",
+    "termsOfServiceUrl": "https://www.elmify.store/terms"
   }
 }
