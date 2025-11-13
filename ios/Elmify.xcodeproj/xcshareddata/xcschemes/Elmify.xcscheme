@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "AudibleClone.app"
-               BlueprintName = "AudibleClone"
-               ReferencedContainer = "container:AudibleClone.xcodeproj">
+               BuildableName = "Elmify.app"
+               BlueprintName = "Elmify"
+               ReferencedContainer = "container:Elmify.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "AudibleCloneTests.xctest"
-               BlueprintName = "AudibleCloneTests"
-               ReferencedContainer = "container:AudibleClone.xcodeproj">
+               BuildableName = "ElmifyTests.xctest"
+               BlueprintName = "ElmifyTests"
+               ReferencedContainer = "container:Elmify.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "AudibleClone.app"
-            BlueprintName = "AudibleClone"
-            ReferencedContainer = "container:AudibleClone.xcodeproj">
+            BuildableName = "Elmify.app"
+            BlueprintName = "Elmify"
+            ReferencedContainer = "container:Elmify.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "AudibleClone.app"
-            BlueprintName = "AudibleClone"
-            ReferencedContainer = "container:AudibleClone.xcodeproj">
+            BuildableName = "Elmify.app"
+            BlueprintName = "Elmify"
+            ReferencedContainer = "container:Elmify.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

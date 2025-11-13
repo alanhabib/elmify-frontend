@@ -1,0 +1,87 @@
+{
+  "speakers": [
+    {
+      "name": "Abdulrahman Hassan\n",
+      "bio": "Abdulrahman Hassan is uniquely positioned as an individual who combines the experience of traditional Islamic scholarship from the East, as well as the knowledge and understanding of the West. By the tender age of 10, Allah allowed him to memorise The Qur’an and Buloogh Al Maraam – a book that contains more than 1,300 hadith. He then went on to formally study Islam in Saudi Arabia, Egypt and Somalia, before returning to the UK as an Imaam and a da’ee. He has delivered hundreds of hours of Islamic content on YouTube and has fast become a popular name amongst the English-speaking Muslim audience.\n",
+      "imageUrl": "speakers/abdulrahman-hassan/images/speaker.jpg\n",
+      "imageSmallUrl": "speakers/abdulrahman-hassan/images/speaker_small.jpg\n",
+      "isPremium": false,
+      "collections": [
+        {
+          "title": "Seerah of Prophet Muhammad ﷺ\n",
+          "description": "The Story of The Greatest Men That Ever Lived. The life of the Prophet Muhammad PBUH, the last Prophet of Allah SWT in great detail: A source of inspiration for every human being.All rights go to Al Madrasatu Al Umariyyah.Speaker: Ustadh Abdulrahman Hassan\n",
+          "year": null,
+          "coverImageUrl": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/images/cover.jpg\n",
+          "coverImageSmallUrl": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/images/cover_small.jpg\n",
+          "lectures": [
+            {
+              "title": "Introduction\n",
+              "description": "Introduction to the Seerah series covering the life and times of Prophet Muhammad ﷺ\n",
+              "lectureNumber": 1,
+              "fileName": "01-introduction.mp3\n",
+              "filePath": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/lectures/01-introduction.mp3\n",
+              "duration": 0,
+              "fileSize": 37648135,
+              "fileFormat": "mp3\n",
+              "bitrate": 128003,
+              "sampleRate": 44100,
+              "fileHash": "51edbb4121fe60dd6de356a5b4bfc87fd73b2fc457e96a96d811645af25a52da\n"
+            },
+            {
+              "title": "The History of Arabs\n",
+              "description": "Exploring the historical background of the Arabian Peninsula and Arab tribes before Islam\n",
+              "lectureNumber": 2,
+              "fileName": "02-the-history-of-arabs.mp3\n",
+              "filePath": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/lectures/02-the-history-of-arabs.mp3\n",
+              "duration": 0,
+              "fileSize": 50757843,
+              "fileFormat": "mp3\n",
+              "bitrate": 128002,
+              "sampleRate": 44100,
+              "fileHash": "13fc7e24052237c3f299771a1e43f282b7e9a318b432e2dd9a1d367a876f6d25\n"
+            },
+            {
+              "title": "Civilisation and Religion of the Arabs\n",
+              "description": "Understanding the civilization, culture and religious practices of pre-Islamic Arabs\n",
+              "lectureNumber": 3,
+              "fileName": "03-civilisation-and-religion-of-the-arabs.mp3\n",
+              "filePath": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/lectures/03-civilisation-and-religion-of-the-arabs.mp3\n",
+              "duration": 0,
+              "fileSize": 44975377,
+              "fileFormat": "mp3\n",
+              "bitrate": 128003,
+              "sampleRate": 44100,
+              "fileHash": "7cbeab3488481f7ccff1326d26b06b57ee3cec41033c6c4679593ed84f53495a\n"
+            },
+            {
+              "title": "Arabian Peninsula before Islam\n",
+              "description": "The state of the Arabian Peninsula in the years leading up to the advent of Islam\n",
+              "lectureNumber": 4,
+              "fileName": "04-arabian-peninsula-before-islam.mp3\n",
+              "filePath": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/lectures/04-arabian-peninsula-before-islam.mp3\n",
+              "duration": 0,
+              "fileSize": 49586303,
+              "fileFormat": "mp3\n",
+              "bitrate": 128002,
+              "sampleRate": 44100,
+              "fileHash": "c30d7db37ec14710cb81f9becebccc3d29d6f9634b738dfb7a38fa5f9dde4bc3\n"
+            },
+            {
+              "title": "Mannerisms & Etiquettes of the Arabs\n",
+              "description": "Social customs, manners and etiquette practiced by Arabs before Islam\n",
+              "lectureNumber": 5,
+              "fileName": "05-mannerisms-etiquettes-of-the-arabs.mp3\n",
+              "filePath": "speakers/abdulrahman-hassan/collections/seerah-of-prophet-muhammad/lectures/05-mannerisms-etiquettes-of-the-arabs.mp3\n",
+              "duration": 0,
+              "fileSize": 49613053,
+              "fileFormat": "mp3\n",
+              "bitrate": 128003,
+              "sampleRate": 44100,
+              "fileHash": "802a05412787d7173dbe87f28ab7dfa11526a5da66049ff5c62b6cdd6d64e44c\n"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

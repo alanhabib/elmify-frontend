@@ -284,8 +284,8 @@ upload_file() {
         return 0
     fi
 
-    # Upload using wrangler
-    if wrangler r2 object put "$bucket/$object_key" --file "$local_file" >/dev/null 2>&1; then
+    # Upload using wrangler (--remote flag uploads to Cloudflare R2, not local)
+    if wrangler r2 object put "$bucket/$object_key" --file "$local_file" --remote >/dev/null 2>&1; then
         log_success "Uploaded: $object_key"
         return 0
     else

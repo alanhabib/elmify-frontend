@@ -1,4 +1,4 @@
-package com.vadinsavin.AudibleClone
+package com.vadinsavin.Elmify
 
 import android.os.Build
 import android.os.Bundle

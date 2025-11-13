@@ -4,6 +4,8 @@
   <dict>
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true/>
+    <key>CFBundleAllowMixedLocalizations</key>
+    <true/>
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
@@ -15,7 +17,7 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>$(PRODUCT_NAME)</string>
+    <string>Elmify</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
@@ -55,36 +57,14 @@
     </dict>
     <key>NSFaceIDUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
-    <key>NSUserTrackingUsageDescription</key>
-    <string>This identifier will be used to deliver personalized content to you.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your microphone.</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
     </array>
-    <key>NSAppTransportSecuritySettings</key>
-    <dict>
-      <key>NSExceptionDomains</key>
-      <dict>
-        <key>elmify-backend-production.up.railway.app</key>
-        <dict>
-          <key>NSExceptionAllowsInsecureHTTPLoads</key>
-          <false/>
-          <key>NSIncludesSubdomains</key>
-          <true/>
-          <key>NSExceptionRequiresForwardSecrecy</key>
-          <true/>
-          <key>NSExceptionMinimumTLSVersion</key>
-          <string>TLSv1.2</string>
-        </dict>
-        <key>elmify.store</key>
-        <dict>
-          <key>NSExceptionAllowsInsecureHTTPLoads</key>
-          <false/>
-          <key>NSIncludesSubdomains</key>
-          <true/>
-        </dict>
-      </dict>
-    </dict>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>This identifier will be used to deliver personalized content to you.</string>
     <key>RCTNewArchEnabled</key>
     <true/>
     <key>UIBackgroundModes</key>
