@@ -94,7 +94,19 @@ export function useSpeakers(options: UseSpeakersOptions = {}) {
       }
 
       // Return paginated response with data and pagination metadata
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: CACHE_TIMES.speakers.staleTime,
@@ -176,10 +188,32 @@ export function useFeaturedSpeakers() {
       const response = await speakerAPI.getFeatured();
 
       if (response.error || !response.success) {
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     staleTime: CACHE_TIMES.speakers.staleTime,
     gcTime: CACHE_TIMES.speakers.gcTime,
@@ -220,10 +254,32 @@ export function useSearchSpeakers(
       const response = await speakerAPI.search(query, params);
 
       if (response.error || !response.success) {
-        return { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+        return {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        };
       }
 
-      return response.data || { data: [], pagination: { currentPage: 0, pageSize: 0, totalItems: 0, totalPages: 0, hasNext: false, hasPrevious: false } };
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize: 0,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
     },
     enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes for search results

@@ -4,7 +4,7 @@
  * Shows speaker image, name, bio, and their collections
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -12,15 +12,20 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
 
-import { useSpeaker } from '@/queries/hooks/speakers';
-import { useCollectionsBySpeaker } from '@/queries/hooks/collections';
+import { useSpeaker } from "@/queries/hooks/speakers";
+import { useCollectionsBySpeaker } from "@/queries/hooks/collections";
 
 const SWIPE_THRESHOLD = 100;
 
@@ -33,13 +38,13 @@ export default function SpeakerScreen() {
     data: speaker,
     isLoading: speakerLoading,
     isError: speakerError,
-  } = useSpeaker(id || '');
+  } = useSpeaker(id || "");
 
   const {
     data: collections = [],
     isLoading: collectionsLoading,
     isError: collectionsError,
-  } = useCollectionsBySpeaker(id || '');
+  } = useCollectionsBySpeaker(id || "");
 
   const isLoading = speakerLoading || collectionsLoading;
   const hasError = speakerError || collectionsError;
@@ -101,7 +106,9 @@ export default function SpeakerScreen() {
             onPress={() => router.back()}
             className="mt-6 bg-primary px-6 py-3 rounded-lg"
           >
-            <Text className="text-primary-foreground font-semibold">Go Back</Text>
+            <Text className="text-primary-foreground font-semibold">
+              Go Back
+            </Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -117,83 +124,100 @@ export default function SpeakerScreen() {
             <Pressable onPress={() => router.back()} className="p-2 -ml-2">
               <Ionicons name="chevron-down" size={28} color="white" />
             </Pressable>
-            <Text className="flex-1 text-lg font-semibold text-foreground ml-2" numberOfLines={1}>
+            <Text
+              className="flex-1 text-lg font-semibold text-foreground ml-2"
+              numberOfLines={1}
+            >
               {speaker.name}
             </Text>
           </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Square Speaker Image - Centered - Smaller size */}
-        <View className="items-center py-6 px-4">
-          {speaker.imageUrl ? (
-            <Image
-              source={{ uri: speaker.imageUrl }}
-              className="rounded-2xl bg-muted"
-              style={{ width: 200, height: 200 }}
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="rounded-2xl bg-muted items-center justify-center" style={{ width: 200, height: 200 }}>
-              <Ionicons name="person" size={80} color="#9ca3af" />
-            </View>
-          )}
-        </View>
-
-        {/* Speaker Info */}
-        <View className="px-6 mb-6">
-          <Text className="text-3xl font-bold text-foreground text-center mb-3">
-            {speaker.name}
-          </Text>
-
-          <Text className="text-base text-muted-foreground text-center leading-6">
-            {speaker.bio || "Renowned speaker and thought leader with extensive experience in delivering impactful lectures and presentations."}
-          </Text>
-        </View>
-
-        {/* Collections List */}
-        <View className="px-4 pb-6">
-          <Text className="text-xl font-bold text-foreground mb-4">
-            Collections ({collections.length})
-          </Text>
-
-          {collections.map((collection: any) => (
-            <Pressable
-              key={collection.id}
-              onPress={() => handleCollectionPress(collection.id.toString())}
-              className="mb-4 active:opacity-70"
-            >
-              <View className="flex-row bg-card rounded-lg overflow-hidden">
-                {/* Collection Cover */}
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            {/* Square Speaker Image - Centered - Smaller size */}
+            <View className="items-center py-6 px-4">
+              {speaker.imageUrl ? (
                 <Image
-                  source={{ uri: collection.coverImageUrl }}
-                  className="bg-muted"
-                  style={{ width: 100, height: 100 }}
+                  source={{ uri: speaker.imageUrl }}
+                  className="rounded-2xl bg-muted"
+                  style={{ width: 200, height: 200 }}
                   resizeMode="cover"
                 />
-
-                {/* Collection Info */}
-                <View className="flex-1 p-3 justify-center">
-                  <Text className="text-base font-semibold text-foreground mb-1" numberOfLines={2}>
-                    {collection.title}
-                  </Text>
-                  {collection.description ? (
-                    <Text className="text-sm text-muted-foreground" numberOfLines={2}>
-                      {collection.description}
-                    </Text>
-                  ) : null}
+              ) : (
+                <View
+                  className="rounded-2xl bg-muted items-center justify-center"
+                  style={{ width: 200, height: 200 }}
+                >
+                  <Ionicons name="person" size={80} color="#9ca3af" />
                 </View>
-              </View>
-            </Pressable>
-          ))}
-
-          {collections.length === 0 && (
-            <View className="py-12 items-center">
-              <Ionicons name="albums-outline" size={48} color="#9ca3af" />
-              <Text className="text-muted-foreground mt-4">No collections from this speaker</Text>
+              )}
             </View>
-          )}
-        </View>
-      </ScrollView>
+
+            {/* Speaker Info */}
+            <View className="px-6 mb-6">
+              <Text className="text-3xl font-bold text-foreground text-center mb-3">
+                {speaker.name}
+              </Text>
+
+              <Text className="text-base text-muted-foreground text-center leading-6">
+                {speaker.bio ||
+                  "Renowned speaker and thought leader with extensive experience in delivering impactful lectures and presentations."}
+              </Text>
+            </View>
+
+            {/* Collections List */}
+            <View className="px-4 pb-6">
+              <Text className="text-xl font-bold text-foreground mb-4">
+                Collections ({collections.length})
+              </Text>
+
+              {collections.map((collection: any) => (
+                <Pressable
+                  key={collection.id}
+                  onPress={() =>
+                    handleCollectionPress(collection.id.toString())
+                  }
+                  className="mb-4 active:opacity-70"
+                >
+                  <View className="flex-row bg-card rounded-lg overflow-hidden">
+                    {/* Collection Cover */}
+                    <Image
+                      source={{ uri: collection.coverImageUrl }}
+                      className="bg-muted"
+                      style={{ width: 100, height: 100 }}
+                      resizeMode="cover"
+                    />
+
+                    {/* Collection Info */}
+                    <View className="flex-1 p-3 justify-center">
+                      <Text
+                        className="text-base font-semibold text-foreground mb-1"
+                        numberOfLines={2}
+                      >
+                        {collection.title}
+                      </Text>
+                      {collection.description ? (
+                        <Text
+                          className="text-sm text-muted-foreground"
+                          numberOfLines={2}
+                        >
+                          {collection.description}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                </Pressable>
+              ))}
+
+              {collections.length === 0 && (
+                <View className="py-12 items-center">
+                  <Ionicons name="albums-outline" size={48} color="#9ca3af" />
+                  <Text className="text-muted-foreground mt-4">
+                    No collections from this speaker
+                  </Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
         </SafeAreaView>
       </Animated.View>
     </GestureDetector>
