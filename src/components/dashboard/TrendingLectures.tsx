@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { usePlayer } from "@/providers/PlayerProvider";
 import { useTrendingLectures } from "@/queries/hooks/lectures";
+import Svg, { Text as SvgText } from "react-native-svg";
 
 type Book = {
   id: string;
@@ -42,17 +43,35 @@ const BookCard = ({ book, onCardClick, index }: BookCardProps) => {
               justifyContent: 'center',
             }}
           >
-            <Text
-              style={{
-                fontSize: 140,
-                fontWeight: '900',
-                fontFamily: 'Oswald',
-                letterSpacing: -5,
-                color: 'rgba(255, 255, 255, 0.4)',
-              }}
-            >
-              {index + 1}
-            </Text>
+            <Svg height="200" width="200">
+              {/* Outer stroke layer */}
+              <SvgText
+                fill="#000000"
+                stroke="rgba(255, 255, 255, 0.4)"
+                strokeWidth="4"
+                fontSize="140"
+                fontWeight="900"
+                fontFamily="Oswald"
+                letterSpacing="-5"
+                x="0"
+                y="140"
+              >
+                {index + 1}
+              </SvgText>
+              {/* Inner fill to cover interior */}
+              <SvgText
+                fill="#000000"
+                stroke="none"
+                fontSize="140"
+                fontWeight="900"
+                fontFamily="Oswald"
+                letterSpacing="-5"
+                x="0"
+                y="140"
+              >
+                {index + 1}
+              </SvgText>
+            </Svg>
           </View>
           <Image
             source={{ uri: book.thumbnail_url }}
