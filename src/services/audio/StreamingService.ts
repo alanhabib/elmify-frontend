@@ -49,18 +49,8 @@ export class StreamingService {
 
       let streamUrl = response.data.url;
 
-      // If URL is relative (proxy endpoint), prepend base URL and add auth token
-      if (streamUrl.startsWith('/')) {
-        const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.replace('/api/v1', '') || '';
-        streamUrl = `${baseUrl}${streamUrl}`;
-
-        // Add auth token as URL parameter for TrackPlayer (can't use headers)
-        const authHeaders = await AuthManager.getAuthHeaders();
-        const token = authHeaders['Authorization']?.replace('Bearer ', '');
-        if (token) {
-          streamUrl += `?token=${encodeURIComponent(token)}`;
-        }
-      }
+      // Direct R2 CDN URLs are returned as-is (already full HTTPS URLs)
+      // No token needed since R2 bucket is public via cdn.elmify.store
 
       // Cache the URL if enabled
       if (options.useCache) {
