@@ -52,7 +52,12 @@ export class StreamingService {
       // Direct R2 CDN URLs are returned as-is (already full HTTPS URLs)
       // No token needed since R2 bucket is public via cdn.elmify.store
 
-      console.log('🎵 StreamingService: Received URL from backend:', streamUrl);
+      // CRITICAL FIX: Properly encode URLs with spaces for TrackPlayer/iOS AVPlayer
+      // Safari handles unencoded spaces, but native iOS AVPlayer requires proper encoding
+      streamUrl = encodeURI(streamUrl);
+
+      console.log('🎵 StreamingService: Received URL from backend:', response.data.url);
+      console.log('🎵 StreamingService: Encoded URL:', streamUrl);
       console.log('🎵 StreamingService: URL starts with https://', streamUrl.startsWith('https://'));
       console.log('🎵 StreamingService: URL contains cdn.elmify.store:', streamUrl.includes('cdn.elmify.store'));
 
