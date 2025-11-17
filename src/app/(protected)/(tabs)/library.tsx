@@ -43,8 +43,8 @@ export default function Library() {
       description: fav.lecture.description,
       speakerName: fav.lecture.speakerName || fav.lecture.speaker || fav.lecture.author,
       thumbnailUrl: fav.lecture.thumbnailUrl || fav.lecture.thumbnail_url,
-      filePath: fav.lecture.filePath || fav.lecture.audio_url,
-      audio_url: fav.lecture.audio_url || fav.lecture.filePath,
+      filePath: fav.lecture.filePath,
+      audio_url: '', // Will be fetched dynamically by PlayerProvider
       duration: fav.lecture.duration,
       progress: fav.lecture.progress || 0,
     }));
@@ -65,7 +65,7 @@ export default function Library() {
         speakerName: download.speaker || 'Unknown Speaker',
         thumbnailUrl: download.thumbnail_url,
         filePath: download.filePath,
-        audio_url: download.filePath,
+        audio_url: download.filePath, // Use local file path for downloaded lectures
         duration: download.duration || 0,
         progress: continueData?.currentPosition || 0,
       };

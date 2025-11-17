@@ -35,7 +35,7 @@ export class StreamingService {
         }
       }
 
-      // Use new streaming API to get presigned URL from MinIO
+      // Use new streaming API to get proxy stream URL
       const response = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
 
       if (!response.success || !response.data?.url) {
@@ -47,7 +47,13 @@ export class StreamingService {
         return null;
       }
 
-      const streamUrl = response.data.url;
+      let streamUrl = response.data.url;
+
+      // If URL is relative (proxy endpoint), prepend base URL
+      if (streamUrl.startsWith('/')) {
+        const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.replace('/api/v1', '') || '';
+        streamUrl = `${baseUrl}${streamUrl}`;
+      }
 
       // Cache the URL if enabled
       if (options.useCache) {

@@ -75,7 +75,7 @@ export const LectureGridView: React.FC<LectureGridViewProps> = ({
                     id: item.id.toString(),
                     title: item.title,
                     author: item.speakerName || '',
-                    audio_url: item.filePath || item.audio_url || '',
+                    audio_url: item.audio_url || '', // DownloadService will fetch presigned URL
                     thumbnail_url: item.thumbnailUrl,
                     duration: item.duration,
                   }}

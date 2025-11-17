@@ -51,7 +51,7 @@ export default function DownloadsScreen() {
       id: download.lectureId,
       title: download.title || `Lecture ${download.lectureId}`,
       author: download.speaker || 'Unknown Speaker',
-      audio_url: download.filePath,
+      audio_url: download.filePath, // Use local file path for downloaded lectures
       thumbnail_url: download.thumbnail_url,
     });
   };

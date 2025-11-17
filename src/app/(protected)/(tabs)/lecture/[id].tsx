@@ -73,7 +73,7 @@ export default function LectureScreen() {
       title: lecture.title,
       speaker: lecture.speakerName || '',
       author: lecture.speakerName || '',
-      audio_url: lecture.filePath,
+      audio_url: '', // Will be fetched dynamically by PlayerProvider
       thumbnail_url: lecture.thumbnailUrl,
     };
 

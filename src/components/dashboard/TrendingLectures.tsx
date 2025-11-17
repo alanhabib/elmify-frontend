@@ -126,7 +126,7 @@ export const TrendingLectures = () => {
       id: lecture.id.toString(),
       title: lecture.title || 'Untitled',
       author: lecture.speakerName || 'Unknown Speaker',
-      audio_url: lecture.filePath || '',
+      audio_url: '', // Will be fetched dynamically by PlayerProvider
       thumbnail_url: lecture.thumbnailUrl || 'https://via.placeholder.com/300x400?text=No+Image',
     }));
   }, [allTrendingLectures]);

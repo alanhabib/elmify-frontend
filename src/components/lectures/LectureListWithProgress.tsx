@@ -93,7 +93,7 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, collectio
       title: lecture.title,
       speaker: lecture.speakerName || collectionSpeakerName || '',
       author: lecture.speakerName || collectionSpeakerName || '',
-      audio_url: lecture.filePath || '',
+      audio_url: '', // Will be fetched dynamically by PlayerProvider
       thumbnail_url: lecture.thumbnailUrl || collectionCoverUrl,
     };
 
@@ -150,7 +150,7 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, collectio
               id: lecture.id.toString(),
               title: lecture.title,
               author: lecture.speakerName || collectionSpeakerName || '',
-              audio_url: lecture.filePath || lecture.audio_url || '',
+              audio_url: lecture.audio_url || '', // DownloadService will fetch presigned URL
               thumbnail_url: lecture.thumbnailUrl || collectionCoverUrl,
               duration: lecture.duration,
             }}

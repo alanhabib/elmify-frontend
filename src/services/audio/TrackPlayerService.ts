@@ -24,10 +24,25 @@ export class TrackPlayerService {
     if (this.isSetup) return;
 
     try {
-      await TrackPlayer.setupPlayer({
+      const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
+        // CRITICAL: Optimized buffer configuration for R2/Cloudflare streaming
+        // More conservative settings to ensure stable buffering
+        minBuffer: 30,          // Wait for 30 seconds before starting (prevents rebuffering)
+        maxBuffer: 120,         // Larger maximum buffer (2 minutes)
+        playBuffer: 5,          // Wait for 5 seconds of content before playing
+        backBuffer: 15,         // Keep 15 seconds behind for seeking
+        maxCacheSize: 100000,   // 100MB cache for R2 streaming
+      };
+
+      console.log('[TrackPlayer] Setting up with buffer config:', {
+        minBuffer: bufferConfig.minBuffer,
+        maxBuffer: bufferConfig.maxBuffer,
+        playBuffer: bufferConfig.playBuffer,
       });
+
+      await TrackPlayer.setupPlayer(bufferConfig);
 
       await TrackPlayer.updateOptions({
         android: {
@@ -67,6 +82,14 @@ export class TrackPlayerService {
       artist: lecture.author || lecture.speaker,
       artwork: lecture.thumbnail_url,
       duration: 0, // Will be set when loaded
+      // iOS-specific optimizations for R2/Cloudflare streaming
+      // Use timeDomain for better quality during network streaming
+      pitchAlgorithm: 'timeDomain',
+      isLiveStream: false,
+      // Additional headers for better R2 compatibility
+      headers: {
+        'User-Agent': 'Elmify/1.0',
+      },
     };
   }
 
@@ -75,6 +98,14 @@ export class TrackPlayerService {
    */
   static async loadAndPlay(lecture: UILecture, startPosition?: number): Promise<void> {
     const track = this.lectureToTrack(lecture);
+
+    console.log('[TrackPlayer] Loading track:', {
+      id: track.id,
+      title: track.title,
+      url_length: track.url?.length || 0,
+      url_preview: track.url?.substring(0, 80) + '...',
+      has_url: !!track.url,
+    });
 
     await TrackPlayer.reset();
     await TrackPlayer.add(track);

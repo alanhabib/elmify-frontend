@@ -91,22 +91,44 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
         clearInterval(statsTrackingInterval.current);
 
       try {
-        // Check for local file first
+        console.log("🎵 Starting to load lecture:", lecture.id);
+
+        // CRITICAL FIX: Fetch streaming URL FIRST, before any TrackPlayer operations
+        // This prevents stuttering caused by API call delays during playback
         const localUri = await getLocalAudioUri();
-        const audioUrl = localUri || (await getStreamingUrl());
+        let audioUrl: string | null = null;
+
+        if (localUri) {
+          console.log("✅ Using local file:", localUri);
+          audioUrl = localUri;
+        } else {
+          console.log("🌐 Fetching presigned URL from backend...");
+          const startTime = Date.now();
+          audioUrl = await getStreamingUrl();
+          const fetchTime = Date.now() - startTime;
+          console.log(`✅ Presigned URL fetched in ${fetchTime}ms`);
+
+          // Log URL details for debugging
+          if (audioUrl) {
+            console.log(`📋 URL length: ${audioUrl.length} chars`);
+            console.log(`📋 URL preview: ${audioUrl.substring(0, 100)}...`);
+            console.log(`📋 Is HTTPS: ${audioUrl.startsWith('https')}`);
+          }
+        }
 
         if (!audioUrl) {
           throw new Error("No audio source available");
         }
 
-        // Create lecture with proper URL
+        // Now we have the URL ready - TrackPlayer can buffer immediately
         const lectureWithUrl: UILecture = {
           ...lecture,
           audio_url: audioUrl,
         };
 
-        // Load and play with start position
+        console.log("🎵 Loading into TrackPlayer...");
         await TrackPlayerService.loadAndPlay(lectureWithUrl, startPosition);
+        console.log("✅ Playback started successfully");
 
         setIsLoading(false);
       } catch (err) {
@@ -377,6 +399,37 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     setRepeatMode(newMode);
     await TrackPlayerService.setRepeatMode(newMode);
   };
+
+  // Track playback errors and state changes for debugging
+  useTrackPlayerEvents([Event.PlaybackError, Event.PlaybackState], async (event) => {
+    if (event.type === Event.PlaybackError) {
+      console.error('[TrackPlayer] Playback error:', event);
+    }
+    if (event.type === Event.PlaybackState) {
+      const stateNames: Record<State, string> = {
+        [State.None]: 'None',
+        [State.Stopped]: 'Stopped',
+        [State.Playing]: 'Playing',
+        [State.Paused]: 'Paused',
+        [State.Buffering]: 'Buffering',
+        [State.Connecting]: 'Connecting',
+        [State.Ready]: 'Ready',
+        [State.Loading]: 'Loading',
+        [State.Error]: 'Error',
+      };
+
+      const stateName = stateNames[event.state] || event.state;
+
+      // Get buffer info to understand why it's buffering
+      try {
+        const position = await TrackPlayerService.getPosition();
+        const duration = await TrackPlayerService.getDuration();
+        console.log(`[TrackPlayer] State: ${stateName} | Position: ${position.toFixed(1)}s / ${duration.toFixed(1)}s`);
+      } catch (e) {
+        console.log(`[TrackPlayer] State changed: ${stateName}`);
+      }
+    }
+  });
 
   // Auto-play next when current finishes
   useTrackPlayerEvents([Event.PlaybackQueueEnded], () => {

@@ -164,16 +164,27 @@ function renameFiles(folderPath, pattern) {
   console.log(`   ❌ Errors: ${errors} files`);
 }
 
-// Process both folders
-const folder1 = '/Users/alanhabib/Desktop/hobby_projects/batch/test_upload/maher al-muaiqly/Quran Hafs';
-const folder2 = '/Users/alanhabib/Desktop/hobby_projects/batch/test_upload/Abdul rashid sufi/Quran Hafs';
+// Get command line arguments
+const args = process.argv.slice(2);
 
 console.log('🔄 Starting Quran Surah Renaming Process...\n');
 
-// Rename folder 1: 001.mp3, 002.mp3, etc.
-renameFiles(folder1, '{num}.mp3');
+if (args.length === 0) {
+  // Default behavior: process both original folders
+  const folder1 = '/Users/alanhabib/Desktop/hobby_projects/batch/test_upload/maher al-muaiqly/Quran Hafs';
+  const folder2 = '/Users/alanhabib/Desktop/hobby_projects/batch/test_upload/Abdul rashid sufi/Quran Hafs';
 
-// Rename folder 2: 001_2.mp3, 002_2.mp3, etc.
-renameFiles(folder2, '{num}_2.mp3');
+  renameFiles(folder1, '{num}.mp3');
+  renameFiles(folder2, '{num}_2.mp3');
+} else {
+  // Process folders passed as arguments
+  // Usage: node rename_quran_surahs.js "/path/to/folder" "{num}.mp3"
+  // Or:    node rename_quran_surahs.js "/path/to/folder" (defaults to {num}.mp3)
+
+  const folderPath = args[0];
+  const pattern = args[1] || '{num}.mp3';
+
+  renameFiles(folderPath, pattern);
+}
 
 console.log('\n✨ Renaming process complete!\n');

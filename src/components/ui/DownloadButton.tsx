@@ -59,7 +59,7 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({
       id: lecture.id,
       title: lecture.title,
       author: lecture.author || lecture.speaker || "",
-      audio_url: lecture.audio_url || lecture.filePath || "",
+      audio_url: lecture.audio_url || "", // DownloadService will fetch presigned URL
       thumbnail_url: lecture.thumbnail_url,
       duration: lecture.duration,
     };

@@ -70,7 +70,7 @@ LECTURE_COUNT=0
 
 # Supported file formats
 SUPPORTED_AUDIO_FORMATS=("mp3" "m4a" "wav" "flac" "aac" "ogg")
-SUPPORTED_IMAGE_FORMATS=("jpg" "jpeg" "png")
+SUPPORTED_IMAGE_FORMATS=("jpg" "jpeg" "png" "webp")
 
 # Color codes for terminal output
 readonly RED='\033[0;31m'
@@ -208,12 +208,15 @@ validate_dependencies() {
 # Check if a file has a valid extension
 has_valid_extension() {
     local file="$1"
-    local -n valid_formats=$2  # nameref to array
+    local formats_name="$2"
 
     local extension="${file##*.}"
     extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
 
-    for format in "${valid_formats[@]}"; do
+    # Use eval to access array by name (compatible with Bash 3.2)
+    eval "local formats=(\"\${${formats_name}[@]}\")"
+
+    for format in "${formats[@]}"; do
         if [[ "$extension" == "$format" ]]; then
             return 0
         fi
@@ -296,10 +299,10 @@ validate_lecture_filename() {
     local filename="$1"
     local relative_path="$2"
 
-    # Expected pattern: 01 - Title.mp3 (number must be 01-99)
-    if [[ ! "$filename" =~ ^[0-9]{2}\ -\ .+\.(mp3|m4a|wav|flac|aac|ogg)$ ]]; then
+    # Expected pattern: 01 - Title.mp3 (number must be 01-999)
+    if [[ ! "$filename" =~ ^[0-9]{2,3}\ -\ .+\.(mp3|m4a|wav|flac|aac|ogg)$ ]]; then
         log_warning "Invalid lecture filename format: $relative_path"
-        log_warning "  Expected: 'NN - Title.ext' (e.g., '01 - Introduction.mp3')"
+        log_warning "  Expected: 'NN - Title.ext' (e.g., '01 - Introduction.mp3' or '114 - Surah Name.mp3')"
 
         # Try to suggest a fix
         if [[ "$filename" =~ ^[0-9]+[^0-9] ]]; then
