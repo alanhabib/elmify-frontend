@@ -15,7 +15,16 @@ export interface StreamingOptions {
   timeout?: number;
 }
 
+interface CachedUrl {
+  url: string;
+  timestamp: number;
+}
+
 export class StreamingService {
+  // In-memory cache for streaming URLs
+  // URLs expire after 50 minutes (R2 presigned URLs typically last 1 hour)
+  private static urlCache: Map<string, CachedUrl> = new Map();
+  private static CACHE_EXPIRATION_MS = 50 * 60 * 1000; // 50 minutes
   /**
    * Get authenticated streaming URL for a lecture from MinIO
    *
@@ -31,6 +40,7 @@ export class StreamingService {
       if (options.useCache) {
         const cachedUrl = this.getCachedUrl(lecture.id.toString());
         if (cachedUrl) {
+          console.log('[StreamingService] Using cached URL for lecture:', lecture.id);
           return cachedUrl;
         }
       }
@@ -39,6 +49,11 @@ export class StreamingService {
       const response = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
 
       if (!response.success || !response.data?.url) {
+        console.error('[StreamingService] Failed to get streaming URL:', {
+          lectureId: lecture.id,
+          error: response.error,
+        });
+
         // Handle authentication errors
         if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
           await AuthManager.handleAuthError(new Error('401 Unauthorized'));
@@ -51,6 +66,11 @@ export class StreamingService {
 
       // Direct R2 CDN URLs are returned as-is (already full HTTPS URLs)
       // No token needed since R2 bucket is public via cdn.elmify.store
+      console.log('[StreamingService] Got streaming URL:', {
+        lectureId: lecture.id,
+        urlLength: streamUrl.length,
+        urlPreview: streamUrl.substring(0, 80) + '...',
+      });
 
       // CRITICAL FIX: Properly encode URLs with spaces for TrackPlayer/iOS AVPlayer
       // Safari handles unencoded spaces, but native iOS AVPlayer requires proper encoding
@@ -69,46 +89,47 @@ export class StreamingService {
       console.log('🎵 StreamingService: Final URL being returned:', streamUrl);
       return streamUrl;
     } catch (error) {
+      console.error('[StreamingService] Exception getting streaming URL:', {
+        lectureId: lecture.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return null;
     }
   }
 
   /**
-   * Get authenticated headers for streaming requests
+   * Get streaming headers for audio requests
+   * Note: R2 CDN URLs are public, so no authentication needed.
+   * Range headers are managed by TrackPlayer internally for proper buffering.
    */
-  static async getStreamingHeaders(): Promise<Record<string, string>> {
-    try {
-      const headers = await AuthManager.getAuthHeaders();
-
-      return {
-        ...headers,
-        Accept: "audio/*",
-        Range: "bytes=0-", // Enable range requests for seeking
-      };
-    } catch (error) {
-      return {
-        Accept: "audio/*",
-        Range: "bytes=0-",
-      };
-    }
+  static getStreamingHeaders(): Record<string, string> {
+    return {
+      Accept: "audio/*",
+      // No Range header - TrackPlayer manages this internally for optimal buffering
+    };
   }
 
   /**
-   * Create authenticated fetch options for audio requests
+   * Create fetch options for audio requests
    */
-  static async createAudioFetchOptions(
+  static createAudioFetchOptions(
     options: StreamingOptions = {}
-  ): Promise<RequestInit> {
-    const headers = await this.getStreamingHeaders();
+  ): RequestInit {
+    const headers = this.getStreamingHeaders();
 
-    return {
+    const fetchOptions: RequestInit = {
       method: "GET",
       headers,
-      // Add signal for timeout if specified
-      ...(options.timeout && {
-        signal: AbortSignal.timeout(options.timeout),
-      }),
     };
+
+    // Add timeout using AbortController (React Native compatible)
+    if (options.timeout) {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), options.timeout);
+      fetchOptions.signal = controller.signal;
+    }
+
+    return fetchOptions;
   }
 
   /**
@@ -116,7 +137,7 @@ export class StreamingService {
    */
   static async validateAudioUrl(url: string): Promise<boolean> {
     try {
-      const fetchOptions = await this.createAudioFetchOptions({
+      const fetchOptions = this.createAudioFetchOptions({
         timeout: 5000,
       });
 
@@ -128,32 +149,70 @@ export class StreamingService {
 
       return response.ok;
     } catch (error) {
+      console.error('[StreamingService] URL validation failed:', {
+        url: url.substring(0, 80) + '...',
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
 
   /**
-   * Get cached audio URL if available
+   * Get cached audio URL if available and not expired
    */
   static getCachedUrl(lectureId: string): string | null {
-    // TODO: Implement caching logic
-    return null;
+    const cached = this.urlCache.get(lectureId);
+
+    if (!cached) {
+      return null;
+    }
+
+    // Check if cache is expired
+    const now = Date.now();
+    if (now - cached.timestamp > this.CACHE_EXPIRATION_MS) {
+      console.log('[StreamingService] Cache expired for lecture:', lectureId);
+      this.urlCache.delete(lectureId);
+      return null;
+    }
+
+    return cached.url;
   }
 
   /**
    * Cache audio URL for future use
    */
   static setCachedUrl(lectureId: string, url: string): void {
-    // TODO: Implement caching logic
+    this.urlCache.set(lectureId, {
+      url,
+      timestamp: Date.now(),
+    });
+    console.log('[StreamingService] Cached URL for lecture:', lectureId);
   }
 
-  // Helper methods
-  private static isFullUrl(url: string): boolean {
-    return url.startsWith("http://") || url.startsWith("https://");
+  /**
+   * Clear all cached URLs
+   */
+  static clearCache(): void {
+    this.urlCache.clear();
+    console.log('[StreamingService] Cache cleared');
   }
 
-  private static cleanPath(path: string): string {
-    // Remove leading slash if present
-    return path.startsWith("/") ? path.slice(1) : path;
+  /**
+   * Clear expired URLs from cache
+   */
+  static cleanExpiredCache(): void {
+    const now = Date.now();
+    let removedCount = 0;
+
+    for (const [lectureId, cached] of this.urlCache.entries()) {
+      if (now - cached.timestamp > this.CACHE_EXPIRATION_MS) {
+        this.urlCache.delete(lectureId);
+        removedCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      console.log('[StreamingService] Removed', removedCount, 'expired URLs from cache');
+    }
   }
 }
