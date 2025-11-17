@@ -24,23 +24,14 @@ export class TrackPlayerService {
     if (this.isSetup) return;
 
     try {
+      // Use default iOS AVPlayer settings - let iOS handle buffering automatically
+      // This matches Safari's behavior which plays smoothly
       const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
-        // CRITICAL: Optimized buffer configuration for R2/Cloudflare streaming
-        // More conservative settings to ensure stable buffering
-        minBuffer: 30,          // Wait for 30 seconds before starting (prevents rebuffering)
-        maxBuffer: 120,         // Larger maximum buffer (2 minutes)
-        playBuffer: 5,          // Wait for 5 seconds of content before playing
-        backBuffer: 15,         // Keep 15 seconds behind for seeking
-        maxCacheSize: 100000,   // 100MB cache for R2 streaming
       };
 
-      console.log('[TrackPlayer] Setting up with buffer config:', {
-        minBuffer: bufferConfig.minBuffer,
-        maxBuffer: bufferConfig.maxBuffer,
-        playBuffer: bufferConfig.playBuffer,
-      });
+      console.log('[TrackPlayer] Setting up with iOS default buffer settings');
 
       await TrackPlayer.setupPlayer(bufferConfig);
 

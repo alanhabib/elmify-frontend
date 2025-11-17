@@ -52,11 +52,16 @@ export class StreamingService {
       // Direct R2 CDN URLs are returned as-is (already full HTTPS URLs)
       // No token needed since R2 bucket is public via cdn.elmify.store
 
+      console.log('🎵 StreamingService: Received URL from backend:', streamUrl);
+      console.log('🎵 StreamingService: URL starts with https://', streamUrl.startsWith('https://'));
+      console.log('🎵 StreamingService: URL contains cdn.elmify.store:', streamUrl.includes('cdn.elmify.store'));
+
       // Cache the URL if enabled
       if (options.useCache) {
         this.setCachedUrl(lecture.id.toString(), streamUrl);
       }
 
+      console.log('🎵 StreamingService: Final URL being returned:', streamUrl);
       return streamUrl;
     } catch (error) {
       return null;
