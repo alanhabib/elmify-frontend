@@ -24,6 +24,8 @@ export class TrackPlayerService {
     if (this.isSetup) return;
 
     try {
+      // Use default iOS AVPlayer settings - let iOS handle buffering automatically
+      // This matches Safari's behavior which plays smoothly
       const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
@@ -34,13 +36,10 @@ export class TrackPlayerService {
         playBuffer: 2.5,        // Small buffer before playback (reduces initial delay)
         backBuffer: 0,          // No back buffer (reduces memory usage)
         maxCacheSize: 50000,    // 50MB cache (balanced for streaming)
+
       };
 
-      console.log('[TrackPlayer] Setting up with buffer config:', {
-        minBuffer: bufferConfig.minBuffer,
-        maxBuffer: bufferConfig.maxBuffer,
-        playBuffer: bufferConfig.playBuffer,
-      });
+      console.log('[TrackPlayer] Setting up with iOS default buffer settings');
 
       await TrackPlayer.setupPlayer(bufferConfig);
 
