@@ -29,6 +29,14 @@ export class TrackPlayerService {
       const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
+        // Optimized buffer configuration for smooth streaming
+        // Based on react-native-track-player best practices
+        minBuffer: 15,          // Minimum buffer before playback starts
+        maxBuffer: 50,          // Maximum buffer (prevents excessive memory usage)
+        playBuffer: 2.5,        // Small buffer before playback (reduces initial delay)
+        backBuffer: 0,          // No back buffer (reduces memory usage)
+        maxCacheSize: 50000,    // 50MB cache (balanced for streaming)
+
       };
 
       console.log('[TrackPlayer] Setting up with iOS default buffer settings');
@@ -53,7 +61,8 @@ export class TrackPlayerService {
           Capability.SkipToNext,
           Capability.SkipToPrevious,
         ],
-        progressUpdateEventInterval: 1,
+        // Update progress every 2 seconds to reduce overhead
+        progressUpdateEventInterval: 2,
       });
 
       this.isSetup = true;
@@ -73,9 +82,9 @@ export class TrackPlayerService {
       artist: lecture.author || lecture.speaker,
       artwork: lecture.thumbnail_url,
       duration: 0, // Will be set when loaded
-      // iOS-specific optimizations for R2/Cloudflare streaming
-      // Use timeDomain for better quality during network streaming
-      pitchAlgorithm: 'timeDomain',
+      // Use low-quality pitch algorithm for better performance
+      // Prevents CPU-intensive processing that can cause audio dropouts
+      pitchAlgorithm: 'lowQuality',
       isLiveStream: false,
       // Additional headers for better R2 compatibility
       headers: {
@@ -101,11 +110,16 @@ export class TrackPlayerService {
     await TrackPlayer.reset();
     await TrackPlayer.add(track);
 
+    // If seeking to a position, wait for initial buffering before seeking
+    // This prevents choppy playback when starting from a specific position
     if (startPosition && startPosition > 0) {
+      await TrackPlayer.play();
+      // Small delay to allow initial buffer before seeking
+      await new Promise(resolve => setTimeout(resolve, 500));
       await TrackPlayer.seekTo(startPosition);
+    } else {
+      await TrackPlayer.play();
     }
-
-    await TrackPlayer.play();
   }
 
   /**
@@ -233,6 +247,27 @@ export class TrackPlayerService {
    */
   static addEventListener(event: Event, handler: (data: any) => void) {
     return TrackPlayer.addEventListener(event, handler);
+  }
+
+  /**
+   * Setup diagnostic listeners for buffering issues
+   * Call this during app initialization to monitor playback health
+   */
+  static setupDiagnosticListeners(): void {
+    // Monitor playback state changes
+    TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
+      console.log('[TrackPlayer] State changed:', state);
+    });
+
+    // Monitor when playback is waiting (buffering)
+    TrackPlayer.addEventListener(Event.PlaybackError, (error) => {
+      console.error('[TrackPlayer] Playback error:', error);
+    });
+
+    // Monitor track changes
+    TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, (data) => {
+      console.log('[TrackPlayer] Track changed:', data);
+    });
   }
 
   /**
