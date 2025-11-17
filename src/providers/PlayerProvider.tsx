@@ -157,28 +157,15 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
     currentLectureId.current = lecture.id;
 
-    // Start loading immediately with position 0, then update if savedPosition loads
-    loadLecture(0);
-  }, [lecture?.id, loadLecture]);
+    // CRITICAL FIX: Wait for saved position before loading
+    // This prevents the player from starting at 0 and then seeking,
+    // which causes choppy playback
+    const startPosition = savedPosition && !isPositionLoading
+      ? savedPosition.currentPosition / 1000
+      : 0;
 
-  // Update position when savedPosition loads (if lecture already started playing)
-  useEffect(() => {
-    if (!lecture || !savedPosition || isPositionLoading) return;
-
-    // Only seek if we have a saved position and player is ready
-    const updatePosition = async () => {
-      try {
-        const startPosition = savedPosition.currentPosition / 1000;
-        if (startPosition > 0) {
-          await TrackPlayerService.seekTo(startPosition);
-        }
-      } catch (error) {
-        console.error("Position update warning:", error);
-      }
-    };
-
-    updatePosition();
-  }, [savedPosition, isPositionLoading]);
+    loadLecture(startPosition);
+  }, [lecture?.id, loadLecture, savedPosition, isPositionLoading]);
 
   const getLocalAudioUri = async (): Promise<string | null> => {
     if (!lecture) return null;
