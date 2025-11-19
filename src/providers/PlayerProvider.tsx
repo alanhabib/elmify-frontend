@@ -208,7 +208,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     }
   });
 
-  // Sync position every 5 seconds while playing
+  // Sync position every 30 seconds while playing
   useEffect(() => {
     if (!lecture || !trackPlayer.isPlaying || isCleaningUp.current) {
       if (positionSyncInterval.current) {
@@ -223,7 +223,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
         const position = await TrackPlayerService.getPosition();
         savePosition(Math.floor(position * 1000));
       }
-    }, 5000);
+    }, 30000);
 
     return () => {
       if (positionSyncInterval.current) {
