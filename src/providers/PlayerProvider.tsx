@@ -112,7 +112,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
           if (audioUrl) {
             console.log(`📋 URL length: ${audioUrl.length} chars`);
             console.log(`📋 URL preview: ${audioUrl.substring(0, 100)}...`);
-            console.log(`📋 Is HTTPS: ${audioUrl.startsWith('https')}`);
+            console.log(`📋 Is HTTPS: ${audioUrl.startsWith("https")}`);
           }
         }
 
@@ -160,9 +160,10 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     // CRITICAL FIX: Wait for saved position before loading
     // This prevents the player from starting at 0 and then seeking,
     // which causes choppy playback
-    const startPosition = savedPosition && !isPositionLoading
-      ? savedPosition.currentPosition / 1000
-      : 0;
+    const startPosition =
+      savedPosition && !isPositionLoading
+        ? savedPosition.currentPosition / 1000
+        : 0;
 
     loadLecture(startPosition);
   }, [lecture?.id, loadLecture, savedPosition, isPositionLoading]);
@@ -200,11 +201,16 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     }
   };
 
-  // Save position when paused
+  // Save position when paused or stopped (best practice: user-initiated actions only)
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {
-    if (event.type === Event.PlaybackState && event.state === State.Paused) {
+    if (
+      event.type === Event.PlaybackState &&
+      (event.state === State.Paused || event.state === State.Stopped)
+    ) {
       const position = await TrackPlayerService.getPosition();
-      savePosition(Math.floor(position * 1000));
+      if (position > 0) {
+        savePosition(Math.floor(position * 1000));
+      }
     }
   });
 
@@ -340,7 +346,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     return () => {
       subscription.remove();
     };
-  }, [lecture]);
+  }, [lecture, updatePositionMutation]);
 
   // Queue management
   const addToQueue = (lectures: UILecture[]) => {
@@ -387,36 +393,55 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     await TrackPlayerService.setRepeatMode(newMode);
   };
 
+  // Wrap seekTo to save position after seeking (best practice)
+  const handleSeekTo = useCallback(
+    async (seconds: number) => {
+      await trackPlayer.seekTo(seconds);
+      // Save position immediately after seek
+      if (lecture) {
+        savePosition(Math.floor(seconds * 1000));
+      }
+    },
+    [trackPlayer.seekTo, lecture]
+  );
+
   // Track playback errors and state changes for debugging
-  useTrackPlayerEvents([Event.PlaybackError, Event.PlaybackState], async (event) => {
-    if (event.type === Event.PlaybackError) {
-      console.error('[TrackPlayer] Playback error:', event);
-    }
-    if (event.type === Event.PlaybackState) {
-      const stateNames: Record<State, string> = {
-        [State.None]: 'None',
-        [State.Stopped]: 'Stopped',
-        [State.Playing]: 'Playing',
-        [State.Paused]: 'Paused',
-        [State.Buffering]: 'Buffering',
-        [State.Connecting]: 'Connecting',
-        [State.Ready]: 'Ready',
-        [State.Loading]: 'Loading',
-        [State.Error]: 'Error',
-      };
+  useTrackPlayerEvents(
+    [Event.PlaybackError, Event.PlaybackState],
+    async (event) => {
+      if (event.type === Event.PlaybackError) {
+        console.error("[TrackPlayer] Playback error:", event);
+      }
+      if (event.type === Event.PlaybackState) {
+        const stateNames: Record<State, string> = {
+          [State.None]: "None",
+          [State.Stopped]: "Stopped",
+          [State.Playing]: "Playing",
+          [State.Paused]: "Paused",
+          [State.Buffering]: "Buffering",
+          [State.Connecting]: "Connecting",
+          [State.Ready]: "Ready",
+          [State.Loading]: "Loading",
+          [State.Error]: "Error",
+        };
 
-      const stateName = stateNames[event.state] || event.state;
+        const stateName = stateNames[event.state] || event.state;
 
-      // Get buffer info to understand why it's buffering
-      try {
-        const position = await TrackPlayerService.getPosition();
-        const duration = await TrackPlayerService.getDuration();
-        console.log(`[TrackPlayer] State: ${stateName} | Position: ${position.toFixed(1)}s / ${duration.toFixed(1)}s`);
-      } catch (e) {
-        console.log(`[TrackPlayer] State changed: ${stateName}`);
+        // Get buffer info to understand why it's buffering
+        try {
+          const position = await TrackPlayerService.getPosition();
+          const duration = await TrackPlayerService.getDuration();
+          console.log(
+            `[TrackPlayer] State: ${stateName} | Position: ${position.toFixed(
+              1
+            )}s / ${duration.toFixed(1)}s`
+          );
+        } catch (e) {
+          console.log(`[TrackPlayer] State changed: ${stateName}`);
+        }
       }
     }
-  });
+  );
 
   // Auto-play next when current finishes
   useTrackPlayerEvents([Event.PlaybackQueueEnded], () => {
@@ -451,7 +476,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
         sleepTimerRemaining,
         play: trackPlayer.play,
         pause: trackPlayer.pause,
-        seekTo: trackPlayer.seekTo,
+        seekTo: handleSeekTo,
         setPlaybackRate: trackPlayer.setPlaybackRate,
       }}
     >
