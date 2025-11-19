@@ -93,7 +93,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "f21ca744-1612-4fd4-b0e1-8feb4a590611"
+        "projectId": "ebe749dc-c4f4-4854-a91f-619e360da455"
       }
     },
     "privacy": "public",
@@ -101,6 +101,7 @@
     "description": "Elmify - Your premium educational lecture platform. Listen to expert lectures anytime, anywhere. Download for offline listening and track your learning progress.",
     "githubUrl": "https://github.com/alanhabib/elmify-frontend",
     "privacyPolicyUrl": "https://www.elmify.store/privacy",
-    "termsOfServiceUrl": "https://www.elmify.store/terms"
+    "termsOfServiceUrl": "https://www.elmify.store/terms",
+    "owner": "alanhabib"
   }
 }
