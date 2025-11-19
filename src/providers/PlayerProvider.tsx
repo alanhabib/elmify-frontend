@@ -150,20 +150,21 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    // Check if this is a new lecture
+    // Check if this is the same lecture already loaded
     if (currentLectureId.current === lecture.id) {
       return;
     }
 
+    // Wait for position to load before starting
+    if (isPositionLoading) {
+      return;
+    }
+
+    // New lecture confirmed - update the ref
     currentLectureId.current = lecture.id;
 
-    // CRITICAL FIX: Wait for saved position before loading
-    // This prevents the player from starting at 0 and then seeking,
-    // which causes choppy playback
-    const startPosition =
-      savedPosition && !isPositionLoading
-        ? savedPosition.currentPosition / 1000
-        : 0;
+    // Calculate start position
+    const startPosition = savedPosition ? savedPosition.currentPosition / 1000 : 0;
 
     loadLecture(startPosition);
   }, [lecture?.id, loadLecture, savedPosition, isPositionLoading]);

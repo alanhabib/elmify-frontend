@@ -110,16 +110,13 @@ export class TrackPlayerService {
     await TrackPlayer.reset();
     await TrackPlayer.add(track);
 
-    // If seeking to a position, wait for initial buffering before seeking
-    // This prevents choppy playback when starting from a specific position
+    // Seek to saved position BEFORE playing to avoid hearing the beginning
     if (startPosition && startPosition > 0) {
-      await TrackPlayer.play();
-      // Small delay to allow initial buffer before seeking
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log(`[TrackPlayer] Seeking to ${startPosition}s before playing`);
       await TrackPlayer.seekTo(startPosition);
-    } else {
-      await TrackPlayer.play();
     }
+
+    await TrackPlayer.play();
   }
 
   /**
