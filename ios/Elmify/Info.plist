@@ -30,7 +30,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>elmify</string>
-          <string>com.vadinsavin.Elmify</string>
+          <string>com.elmify.app</string>
         </array>
       </dict>
       <dict>

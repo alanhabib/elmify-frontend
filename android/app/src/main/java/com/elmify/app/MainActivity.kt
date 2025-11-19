@@ -1,4 +1,4 @@
-package com.vadinsavin.Elmify
+package com.elmify.app
 
 import android.os.Build
 import android.os.Bundle

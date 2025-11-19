@@ -103,5 +103,13 @@ temp/
 
 # Generated files
 *.generated.*
+
+# Manifest files (contain sensitive paths/metadata)
+manifest.json
+exported_manifest.json
+local_manifest.json
+db_manifest.json
+r2_scanned_manifest.json
+r2_legacy_manifest.json
 backup/
 .wrangler/
