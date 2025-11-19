@@ -67,9 +67,25 @@ export interface UserPreferences {
   screenReader?: boolean;
 }
 
+export interface UserSyncRequest {
+  clerkId: string;
+  email: string;
+  fullName?: string;
+  profileImageUrl?: string;
+}
+
 // ============================================================================
 // API FUNCTIONS
 // ============================================================================
+
+/**
+ * Sync user with backend
+ * Creates or updates user in backend database based on Clerk data
+ * Should be called after successful login/signup
+ */
+export async function syncUser(userData: UserSyncRequest): Promise<APIResponse<UserResponse>> {
+  return apiClient.post<UserResponse>("/users/sync", userData);
+}
 
 /**
  * Get current user profile

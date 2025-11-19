@@ -94,6 +94,34 @@ export function useUpdatePreferences() {
 }
 
 /**
+ * Hook for syncing user with backend after Clerk authentication
+ * Should be called once after successful login/signup
+ */
+export function useSyncUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userData: userAPI.UserSyncRequest) => {
+      const response = await userAPI.syncUser(userData);
+
+      if (response.error || !response.success) {
+        throw new Error(response.error || "Failed to sync user");
+      }
+
+      return response.data!;
+    },
+    onSuccess: (data) => {
+      console.log("✅ User synced successfully:", data);
+      // Update the user profile cache with synced data
+      queryClient.setQueryData(queryKeys.user.profile(), data);
+    },
+    onError: (error) => {
+      console.error("❌ Failed to sync user:", error);
+    },
+  });
+}
+
+/**
  * Type exports
  */
 export type { UserPreferences, UserResponse };

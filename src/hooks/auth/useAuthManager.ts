@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { AuthManager, AuthState } from "@/services/auth/authManager";
+import { useSyncUser } from "@/queries/hooks/user";
 
 /**
  * React hook that bridges Clerk authentication with our AuthManager
@@ -15,6 +16,8 @@ export const useAuthManager = () => {
   const [authState, setAuthState] = useState<AuthState>(() =>
     AuthManager.getAuthState()
   );
+  const syncMutation = useSyncUser();
+  const hasSynced = useRef(false);
 
   // Initialize AuthManager with Clerk functions
   useEffect(() => {
@@ -57,6 +60,27 @@ export const useAuthManager = () => {
   useEffect(() => {
     setAuthState(AuthManager.getAuthState());
   }, [isSignedIn, isLoaded, user]);
+
+  // Sync user with backend after successful authentication
+  useEffect(() => {
+    if (isSignedIn && user && !hasSynced.current && !syncMutation.isPending) {
+      hasSynced.current = true;
+
+      syncMutation.mutate({
+        clerkId: user.id,
+        email: user.emailAddresses[0]?.emailAddress || '',
+        fullName: user.fullName || undefined,
+        profileImageUrl: user.imageUrl || undefined,
+      });
+    }
+  }, [isSignedIn, user, syncMutation]);
+
+  // Reset sync flag when user signs out
+  useEffect(() => {
+    if (!isSignedIn) {
+      hasSynced.current = false;
+    }
+  }, [isSignedIn]);
 
   return {
     // Current auth state
