@@ -2,9 +2,9 @@ import React from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { Stack, router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { useAuth } from "@clerk/clerk-expo";
 
 // Hooks
+import { useAuthManager } from "@/hooks/auth/useAuthManager";
 import { useCurrentUser, useUpdatePreferences } from "@/queries/hooks/user";
 import { useOfflineContent } from "@/hooks/useOfflineContent";
 
@@ -14,7 +14,7 @@ import { OfflineContentSection } from "@/components/profile/OfflineContentSectio
 import { AccountActionsSection } from "@/components/profile/AccountActionsSection";
 
 export default function Settings() {
-  const { signOut: clerkSignOut } = useAuth();
+  const { signOut } = useAuthManager();
   const { data: user, isLoading } = useCurrentUser();
   const updatePreferencesMutation = useUpdatePreferences();
   const offlineContent = useOfflineContent();
@@ -38,7 +38,7 @@ export default function Settings() {
   };
 
   const handleSignOut = async () => {
-    await clerkSignOut();
+    await signOut();
   };
 
   if (isLoading) {

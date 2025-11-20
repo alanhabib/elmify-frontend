@@ -4,7 +4,7 @@
  * Maximum 150 lines following React best practices
  */
 
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Text, ActivityIndicator, View, ScrollView } from "react-native";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useRouter } from "expo-router";
@@ -12,10 +12,12 @@ import { useSpeakers } from "@/queries/hooks/speakers";
 import { useCollections } from "@/queries/hooks/collections";
 import { SpeakersSection } from "@/components/speakers/SpeakersSection";
 import { CollectionsSection } from "@/components/collections/CollectionsSection";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 export default function Browse() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const { filterAccessible } = usePremiumAccess();
 
   // Fetch speakers
   const {
@@ -30,6 +32,12 @@ export default function Browse() {
     isLoading: isLoadingCollections,
     error: collectionsError,
   } = useCollections();
+
+  // Filter speakers based on premium access
+  const accessibleSpeakers = useMemo(
+    () => filterAccessible(speakers),
+    [speakers, filterAccessible]
+  );
 
   // Memoized navigation handlers to prevent re-renders
   const handleSpeakerPress = useCallback((speaker: any) => {
@@ -86,7 +94,7 @@ export default function Browse() {
       {/* Speakers Section */}
       <SpeakersSection
         title="Speakers"
-        speakers={speakers}
+        speakers={accessibleSpeakers}
         isLoading={isLoadingSpeakers}
         error={speakersError}
         onSpeakerPress={handleSpeakerPress}

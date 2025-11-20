@@ -28,6 +28,10 @@ class AuthManagerClass {
   private refreshPromise: Promise<string | null> | null = null;
   private listeners: Set<(state: AuthState) => void> = new Set();
 
+  // Token caching to reduce Clerk API calls
+  private tokenCache: { token: string; expiresAt: number } | null = null;
+  private TOKEN_CACHE_DURATION = 4 * 60 * 1000; // 4 minutes (Clerk tokens last 5 min)
+
   // Token getter function - set by React hook
   private tokenGetter: (() => Promise<string | null>) | null = null;
 
@@ -62,12 +66,22 @@ class AuthManagerClass {
         return await this.refreshPromise;
       }
 
+      // Check cache first to reduce Clerk API calls
+      if (this.tokenCache && Date.now() < this.tokenCache.expiresAt) {
+        return this.tokenCache.token;
+      }
+
       // Try to get fresh token from Clerk
       if (this.tokenGetter) {
         const token = await this.tokenGetter();
 
         if (token) {
           this.tokens.accessToken = token;
+          // Cache the token
+          this.tokenCache = {
+            token,
+            expiresAt: Date.now() + this.TOKEN_CACHE_DURATION
+          };
           return token;
         }
       }
@@ -194,6 +208,7 @@ class AuthManagerClass {
    */
   clearTokens(): void {
     this.tokens = { accessToken: null };
+    this.tokenCache = null; // Clear cache too
     this.notifyListeners();
   }
 

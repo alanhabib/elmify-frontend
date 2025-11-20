@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -65,31 +65,31 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <View className="flex-1 bg-gray-900 p-6">
+      <View className="flex-1 bg-background p-6">
         <View className="flex-1 justify-center">
-          <Text className="text-3xl font-bold text-center mb-8 text-white">
+          <Text className="text-3xl font-bold text-center mb-8 text-foreground">
             Verify Your Email
           </Text>
 
           <View className="gap-4">
             <View>
-              <Text className="text-sm font-medium text-gray-300 mb-1">
+              <Text className="text-sm font-medium text-muted-foreground mb-1">
                 Verification Code
               </Text>
               <TextInput
-                className="w-full p-4 border border-gray-700 rounded-lg bg-gray-800 text-white"
+                className="w-full p-4 border border-border rounded-lg bg-card text-foreground"
                 value={code}
                 placeholder="Enter your verification code"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#6b7280"
                 onChangeText={setCode}
               />
             </View>
 
             <TouchableOpacity
-              className="w-full bg-blue-600 p-4 rounded-lg mt-6"
+              className="w-full bg-primary p-4 rounded-lg mt-6"
               onPress={onVerifyPress}
             >
-              <Text className="text-white text-center font-semibold">
+              <Text className="text-primary-foreground text-center font-semibold">
                 Verify Email
               </Text>
             </TouchableOpacity>
@@ -100,56 +100,56 @@ export default function SignUpScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-900 p-6">
+    <View className="flex-1 bg-background p-6">
       <View className="flex-1 justify-center">
-        <Text className="text-3xl font-bold text-center mb-8 text-white">
+        <Text className="text-3xl font-bold text-center mb-8 text-foreground">
           Create Account
         </Text>
 
         <View className="gap-4">
           <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">
+            <Text className="text-sm font-medium text-muted-foreground mb-1">
               Email
             </Text>
             <TextInput
-              className="w-full p-4 border border-gray-700 rounded-lg bg-gray-800 text-white"
+              className="w-full p-4 border border-border rounded-lg bg-card text-foreground"
               autoCapitalize="none"
               value={emailAddress}
               placeholder="Enter email"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#6b7280"
               onChangeText={setEmailAddress}
             />
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-gray-300 mb-1">
+            <Text className="text-sm font-medium text-muted-foreground mb-1">
               Password
             </Text>
             <TextInput
-              className="w-full p-4 border border-gray-700 rounded-lg bg-gray-800 text-white"
+              className="w-full p-4 border border-border rounded-lg bg-card text-foreground"
               value={password}
               placeholder="Enter password"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#6b7280"
               secureTextEntry={true}
               onChangeText={setPassword}
             />
           </View>
 
           <TouchableOpacity
-            className="w-full bg-blue-600 p-4 rounded-lg mt-6"
+            className="w-full bg-primary p-4 rounded-lg mt-6"
             onPress={onSignUpPress}
           >
-            <Text className="text-white text-center font-semibold">
+            <Text className="text-primary-foreground text-center font-semibold">
               Create Account
             </Text>
           </TouchableOpacity>
         </View>
 
         <View className="flex-row justify-center items-center mt-6 gap-2">
-          <Text className="text-gray-400">Already have an account?</Text>
-          <Link href="/sign-in">
-            <Text className="text-blue-400 font-semibold ml-1">Sign in</Text>
-          </Link>
+          <Text className="text-muted-foreground">Already have an account?</Text>
+          <TouchableOpacity onPress={() => router.replace("/sign-in")}>
+            <Text className="text-primary font-semibold ml-1">Sign in</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

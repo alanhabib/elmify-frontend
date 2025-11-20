@@ -36,25 +36,33 @@ export default function PlaybackBar({
   };
 
   return (
-    <View className="gap-4">
+    <View className="gap-3">
       <Pressable
         onPress={onHandleSeek}
         onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-        className="w-full bg-slate-900 h-2 rounded-full justify-center"
-        hitSlop={20}
+        className="w-full bg-muted h-1.5 rounded-full justify-center"
+        hitSlop={{ top: 20, bottom: 20, left: 10, right: 10 }}
       >
         <View
-          className="bg-orange-400 h-full rounded-full"
+          className="bg-primary h-full rounded-full"
           style={{ width: `${progress * 100}%` }}
         />
+        {/* Larger, more tactile seek handle */}
         <View
-          className="absolute w-3 h-3 -translate-x-1/2 rounded-full bg-orange-400"
-          style={{ left: `${progress * 100}%` }}
+          className="absolute w-5 h-5 -translate-x-1/2 rounded-full bg-primary shadow-lg"
+          style={{
+            left: `${progress * 100}%`,
+            shadowColor: '#a855f7',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 4,
+          }}
         />
       </Pressable>
       <View className="flex-row items-center justify-between">
-        <Text className="text-gray-400">{formatTime(currentTime)}</Text>
-        <Text className="text-gray-400">{formatTime(duration)}</Text>
+        <Text className="text-muted-foreground text-sm">{formatTime(currentTime)}</Text>
+        <Text className="text-muted-foreground text-sm">{formatTime(duration)}</Text>
       </View>
     </View>
   );

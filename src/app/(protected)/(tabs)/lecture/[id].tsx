@@ -21,6 +21,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 
 
 import { useLecture } from '@/queries/hooks/lectures';
 import { usePlayer } from '@/providers/PlayerProvider';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 const SWIPE_THRESHOLD = 100;
 
@@ -28,6 +29,7 @@ export default function LectureScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { lecture: currentLecture, setLecture, play, pause, isPlaying } = usePlayer();
+  const { isPremium, canAccess } = usePremiumAccess();
 
   // Fetch lecture data
   const {
@@ -36,6 +38,10 @@ export default function LectureScreen() {
     isError,
     error,
   } = useLecture(id || '');
+
+  // Check if user can access this lecture (based on speaker premium status)
+  const speakerIsPremium = lecture?.speakerInfo?.isPremium ?? false;
+  const hasAccess = !speakerIsPremium || isPremium;
 
   // Swipe right gesture to go back
   const translateX = useSharedValue(0);
@@ -110,6 +116,29 @@ export default function LectureScreen() {
           <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
           <Text className="text-destructive text-lg mt-4 text-center">
             Failed to load lecture
+          </Text>
+          <Pressable
+            onPress={() => router.back()}
+            className="mt-6 bg-primary px-6 py-3 rounded-lg"
+          >
+            <Text className="text-primary-foreground font-semibold">Go Back</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Premium access denied state
+  if (!hasAccess) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <View className="flex-1 justify-center items-center px-4">
+          <Ionicons name="lock-closed-outline" size={64} color="#a855f7" />
+          <Text className="text-foreground text-xl font-bold mt-4 text-center">
+            Premium Content
+          </Text>
+          <Text className="text-muted-foreground text-base mt-2 text-center">
+            This lecture is from a premium speaker. Upgrade to access all content.
           </Text>
           <Pressable
             onPress={() => router.back()}

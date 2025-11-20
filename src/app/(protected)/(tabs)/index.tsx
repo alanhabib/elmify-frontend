@@ -4,7 +4,7 @@
  * Maximum 150 lines following React best practices
  */
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ScrollView, View, Text, ActivityIndicator } from "react-native";
 import { WeekDayCircles } from "@/components/dashboard/WeekDayCircles";
 import { WeeklyReminderCard } from "@/components/dashboard/WeeklyReminderCard";
@@ -17,9 +17,11 @@ import { DeveloperTestingSection } from "@/components/dashboard/DeveloperTesting
 import { HeroCarousel } from "@/components/hero";
 import { useSpeakers } from "@/queries/hooks/speakers";
 import { useRouter } from "expo-router";
+import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 export default function Dashboard() {
   const router = useRouter();
+  const { filterAccessible } = usePremiumAccess();
 
   // Fetch speakers using centralized hook
   const {
@@ -27,6 +29,12 @@ export default function Dashboard() {
     isLoading: isLoadingSpeakers,
     error: speakersError,
   } = useSpeakers();
+
+  // Filter speakers based on premium access
+  const accessibleSpeakers = useMemo(
+    () => filterAccessible(speakers),
+    [speakers, filterAccessible]
+  );
 
   // Memoized callback to prevent unnecessary re-renders
   const handleSpeakerPress = useCallback(
@@ -126,7 +134,7 @@ export default function Dashboard() {
         {/* Speakers Section */}
         <View className="mb-10 px-4">
           <SpeakersSection
-            speakers={speakers}
+            speakers={accessibleSpeakers}
             isLoading={isLoadingSpeakers}
             error={speakersError}
             onSpeakerPress={handleSpeakerPress}
