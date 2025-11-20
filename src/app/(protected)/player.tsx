@@ -204,7 +204,7 @@ export default function PlayerScreen() {
             </View>
 
             {/* Progress bar */}
-            <View className="mt-4">
+            <View className="mt-4 px-6">
               <PlaybackBar
                 currentTime={currentTime}
                 duration={duration}

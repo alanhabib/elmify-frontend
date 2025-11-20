@@ -21,7 +21,17 @@ export class TrackPlayerService {
    * Setup track player with capabilities
    */
   static async setup(): Promise<void> {
-    if (this.isSetup) return;
+    if (this.isSetup) {
+      // Already setup - but we need to stop any existing playback on app refresh
+      // The native player persists across JS reloads
+      try {
+        await TrackPlayer.reset();
+        console.log('[TrackPlayer] Reset existing playback on re-setup');
+      } catch (error) {
+        // Ignore errors during reset
+      }
+      return;
+    }
 
     try {
       // Use default iOS AVPlayer settings - let iOS handle buffering automatically
@@ -29,19 +39,21 @@ export class TrackPlayerService {
       const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
-        // Optimized buffer configuration for smooth streaming
-        // Based on react-native-track-player best practices
-        minBuffer: 15,          // Minimum buffer before playback starts
+        // Optimized buffer configuration for fast start + smooth streaming
+        minBuffer: 10,          // Reduced from 15 - faster start
         maxBuffer: 50,          // Maximum buffer (prevents excessive memory usage)
-        playBuffer: 2.5,        // Small buffer before playback (reduces initial delay)
+        playBuffer: 1.0,        // Reduced from 2.5 - much faster initial playback
         backBuffer: 0,          // No back buffer (reduces memory usage)
         maxCacheSize: 50000,    // 50MB cache (balanced for streaming)
-
       };
 
       console.log('[TrackPlayer] Setting up with iOS default buffer settings');
 
       await TrackPlayer.setupPlayer(bufferConfig);
+
+      // Reset any existing queue from previous app session
+      await TrackPlayer.reset();
+      console.log('[TrackPlayer] Cleared existing queue after setup');
 
       await TrackPlayer.updateOptions({
         android: {

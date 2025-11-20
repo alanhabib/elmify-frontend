@@ -60,6 +60,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(
     null
   );
+  const [trackLoadedId, setTrackLoadedId] = useState<string | null>(null); // Track which lecture is loaded
 
   const positionSyncInterval = useRef<NodeJS.Timeout | null>(null);
   const statsTrackingInterval = useRef<NodeJS.Timeout | null>(null);
@@ -67,6 +68,14 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const lastSavedPosition = useRef<number>(0);
   const isCleaningUp = useRef(false);
   const currentLectureId = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const hasSeekingToSavedPosition = useRef<string | null>(null); // Track which lecture we've seeked for
+
+  // Clear track loaded state on mount (handles app refresh case)
+  // The actual stopping of playback is handled in TrackPlayerService.setup()
+  useEffect(() => {
+    setTrackLoadedId(null);
+  }, []);
 
   // Fetch saved playback position
   const { data: savedPosition, isLoading: isPositionLoading } =
@@ -77,61 +86,104 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   // Use track player hook
   const trackPlayer = useTrackPlayer();
 
-  const loadLecture = useCallback(
-    async (startPosition: number = 0) => {
-      if (!lecture) return;
+  // Main function to load and play a lecture
+  const loadAndPlayLecture = useCallback(
+    async (lectureToPlay: UILecture) => {
+      // Cancel any pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
+      // Update UI immediately
       setIsLoading(true);
       setError(null);
 
+      // CRITICAL: Stop previous playback IMMEDIATELY to prevent double audio
+      // Don't await - fire and forget for speed
+      TrackPlayerService.stop().catch(() => {});
+      setTrackLoadedId(null); // Clear track loaded flag
+      console.log("🛑 Stopped previous playback");
+
       // Clear intervals
-      if (positionSyncInterval.current)
-        clearInterval(positionSyncInterval.current);
-      if (statsTrackingInterval.current)
-        clearInterval(statsTrackingInterval.current);
+      if (positionSyncInterval.current) clearInterval(positionSyncInterval.current);
+      if (statsTrackingInterval.current) clearInterval(statsTrackingInterval.current);
 
       try {
-        console.log("🎵 Starting to load lecture:", lecture.id);
+        console.log("🎵 Starting to load lecture:", lectureToPlay.id);
 
-        // CRITICAL FIX: Fetch streaming URL FIRST, before any TrackPlayer operations
-        // This prevents stuttering caused by API call delays during playback
-        const localUri = await getLocalAudioUri();
+        // Check if aborted
+        if (signal.aborted) return;
+
+        // Check for local file first (fast path)
         let audioUrl: string | null = null;
+        try {
+          const file = `${FileSystem.documentDirectory}${lectureToPlay.id}.mp3`;
+          const fileInfo = await FileSystem.getInfoAsync(file, { size: false });
+          if (fileInfo.exists) {
+            audioUrl = file;
+            console.log("✅ Using local file:", file);
+          }
+        } catch {
+          // No local file, continue to fetch URL
+        }
 
-        if (localUri) {
-          console.log("✅ Using local file:", localUri);
-          audioUrl = localUri;
-        } else {
+        if (signal.aborted) return;
+
+        // Fetch streaming URL if no local file
+        if (!audioUrl) {
           console.log("🌐 Fetching presigned URL from backend...");
           const startTime = Date.now();
-          audioUrl = await getStreamingUrl();
+
+          // Race between fetch and timeout
+          const fetchPromise = StreamingService.getStreamingUrl(lectureToPlay);
+          const timeoutPromise = new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error("URL fetch timeout (10s)")), 10000)
+          );
+
+          try {
+            audioUrl = await Promise.race([fetchPromise, timeoutPromise]);
+          } catch (err) {
+            if (signal.aborted) return;
+            throw err;
+          }
+
           const fetchTime = Date.now() - startTime;
           console.log(`✅ Presigned URL fetched in ${fetchTime}ms`);
-
-          // Log URL details for debugging
-          if (audioUrl) {
-            console.log(`📋 URL length: ${audioUrl.length} chars`);
-            console.log(`📋 URL preview: ${audioUrl.substring(0, 100)}...`);
-            console.log(`📋 Is HTTPS: ${audioUrl.startsWith("https")}`);
-          }
         }
+
+        if (signal.aborted) return;
 
         if (!audioUrl) {
           throw new Error("No audio source available");
         }
 
+        // Double-check we're still loading this lecture
+        if (currentLectureId.current !== lectureToPlay.id) {
+          console.log("⏭️ Lecture changed during URL fetch, aborting");
+          return;
+        }
+
         // Now we have the URL ready - TrackPlayer can buffer immediately
         const lectureWithUrl: UILecture = {
-          ...lecture,
+          ...lectureToPlay,
           audio_url: audioUrl,
         };
 
         console.log("🎵 Loading into TrackPlayer...");
-        await TrackPlayerService.loadAndPlay(lectureWithUrl, startPosition);
+        // Start at position 0 for immediate playback - we'll seek to saved position after
+        await TrackPlayerService.loadAndPlay(lectureWithUrl, 0);
         console.log("✅ Playback started successfully");
 
+        // Mark this track as loaded - now it's safe to seek
+        setTrackLoadedId(lectureToPlay.id);
         setIsLoading(false);
       } catch (err) {
+        if (signal.aborted) return;
+
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load audio";
         console.error("❌ PlayerProvider error:", errorMessage);
@@ -139,52 +191,54 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
         setIsLoading(false);
       }
     },
-    [lecture]
+    []
   );
 
-  // Load new lecture when lecture changes
+  // Handle lecture changes - the main effect
   useEffect(() => {
     if (!lecture) {
-      TrackPlayerService.stop();
+      // Cancel any pending request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      TrackPlayerService.stop().catch(() => {});
       currentLectureId.current = null;
       return;
     }
 
-    // Check if this is the same lecture already loaded
+    // Skip if same lecture already loaded
     if (currentLectureId.current === lecture.id) {
       return;
     }
 
-    // Wait for position to load before starting
-    if (isPositionLoading) {
-      return;
-    }
-
-    // New lecture confirmed - update the ref
+    // New lecture confirmed - update the refs immediately
     currentLectureId.current = lecture.id;
+    hasSeekingToSavedPosition.current = null; // Reset seek guard for new lecture
 
-    // Calculate start position
-    const startPosition = savedPosition ? savedPosition.currentPosition / 1000 : 0;
+    // Start playback immediately - don't wait for position to load
+    loadAndPlayLecture(lecture);
+  }, [lecture?.id, loadAndPlayLecture]);
 
-    loadLecture(startPosition);
-  }, [lecture?.id, loadLecture, savedPosition, isPositionLoading]);
+  // Seek to saved position when it loads (separate from playback start)
+  useEffect(() => {
+    if (!savedPosition || !lecture || isPositionLoading) return;
 
-  const getLocalAudioUri = async (): Promise<string | null> => {
-    if (!lecture) return null;
+    // Only seek once per lecture to prevent multiple rapid seeks
+    if (hasSeekingToSavedPosition.current === lecture.id) return;
 
-    try {
-      const file = `${FileSystem.documentDirectory}${lecture.id}.mp3`;
-      const fileInfo = await FileSystem.getInfoAsync(file, { size: false });
-      return fileInfo.exists ? file : null;
-    } catch {
-      return null;
+    // CRITICAL: Only seek if the track is actually loaded in the player
+    // This prevents seeking on the old track after app refresh
+    if (trackLoadedId !== lecture.id) return;
+
+    // Only seek if we're playing the correct lecture and have a meaningful position
+    if (currentLectureId.current === lecture.id && savedPosition.currentPosition > 1000) {
+      hasSeekingToSavedPosition.current = lecture.id;
+      const positionSeconds = savedPosition.currentPosition / 1000;
+      console.log(`🎯 Seeking to saved position: ${positionSeconds.toFixed(1)}s`);
+      TrackPlayerService.seekTo(positionSeconds).catch(console.error);
     }
-  };
-
-  const getStreamingUrl = async (): Promise<string | null> => {
-    if (!lecture) return null;
-    return await StreamingService.getStreamingUrl(lecture);
-  };
+  }, [savedPosition, lecture?.id, isPositionLoading, trackLoadedId]);
 
   // Save position helper
   const savePosition = (positionMs: number) => {

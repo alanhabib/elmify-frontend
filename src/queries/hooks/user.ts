@@ -5,11 +5,7 @@
  * All hooks require authentication
  */
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as userAPI from "@/api/endpoints/user";
 import { queryKeys } from "@/queries/keys";
 import type { UserPreferences, UserResponse } from "@/api/endpoints/user";
@@ -33,8 +29,8 @@ export function useCurrentUser(options: { enabled?: boolean } = {}) {
       return response.data!;
     },
     enabled,
-    staleTime: 300000, // 5 minutes
-    gcTime: 600000, // 10 minutes
+    staleTime: 3000000, // 50 minutes
+    gcTime: 6000000, // 100 minutes
   });
 }
 
@@ -66,13 +62,10 @@ export function useUpdatePreferences() {
 
       // Optimistically update
       if (previousUser) {
-        queryClient.setQueryData<UserResponse>(
-          queryKeys.user.profile(),
-          {
-            ...previousUser,
-            preferences: newPreferences,
-          }
-        );
+        queryClient.setQueryData<UserResponse>(queryKeys.user.profile(), {
+          ...previousUser,
+          preferences: newPreferences,
+        });
       }
 
       return { previousUser };
