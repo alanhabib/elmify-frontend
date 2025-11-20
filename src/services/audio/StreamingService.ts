@@ -54,9 +54,20 @@ export class StreamingService {
           error: response.error,
         });
 
-        // Handle authentication errors
+        // Handle authentication errors - try to refresh and retry once
         if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
-          await AuthManager.handleAuthError(new Error('401 Unauthorized'));
+          console.log('[StreamingService] Got 401, attempting token refresh and retry...');
+          await AuthManager.forceRefresh();
+
+          // Retry the request once after token refresh
+          const retryResponse = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
+          if (retryResponse.success && retryResponse.data?.url) {
+            console.log('[StreamingService] Retry successful after token refresh');
+            let retryUrl = retryResponse.data.url;
+            retryUrl = encodeURI(retryUrl);
+            return retryUrl;
+          }
+          console.error('[StreamingService] Retry failed after token refresh');
         }
 
         return null;

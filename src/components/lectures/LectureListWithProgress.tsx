@@ -24,17 +24,19 @@ export interface LectureWithProgress {
   audio_url?: string;
   author?: string;
   speaker?: string;
+  lectureNumber?: number;
 }
 
 interface LectureItemProps {
   lecture: LectureWithProgress;
+  allLectures: LectureWithProgress[];
   collectionSpeakerName?: string;
   collectionCoverUrl?: string;
 }
 
-const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, collectionSpeakerName, collectionCoverUrl }) => {
+const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectures, collectionSpeakerName, collectionCoverUrl }) => {
   const router = useRouter();
-  const { lecture: currentLecture, setLecture, play, pause, isPlaying, currentTime, duration } = usePlayer();
+  const { lecture: currentLecture, setLecture, addToQueue, play, pause, isPlaying, currentTime, duration } = usePlayer();
 
   // Fetch playback position for this lecture
   const { data: playbackPosition } = usePlaybackPosition(lecture.id.toString());
@@ -98,6 +100,20 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, collectio
     };
 
     if (currentLecture?.id !== lectureFormat.id) {
+      // Convert all lectures to queue format and set the queue
+      const queueLectures = allLectures.map(l => ({
+        id: l.id.toString(),
+        title: l.title,
+        speaker: l.speakerName || collectionSpeakerName || '',
+        author: l.speakerName || collectionSpeakerName || '',
+        audio_url: '', // Will be fetched dynamically
+        thumbnail_url: l.thumbnailUrl || collectionCoverUrl,
+      }));
+
+      // Set the queue with all lectures from this collection
+      addToQueue(queueLectures);
+
+      // Start playing the selected lecture
       setLecture(lectureFormat);
     } else {
       if (isPlaying) {
@@ -197,8 +213,22 @@ export const LectureListWithProgress: React.FC<LectureListWithProgressProps> = (
   collectionSpeakerName,
   collectionCoverUrl,
 }) => {
+  // Sort lectures by lectureNumber (or title as fallback)
+  const sortedLectures = useMemo(() => {
+    return [...lectures].sort((a, b) => {
+      // Primary sort: by lectureNumber if available
+      if (a.lectureNumber !== undefined && b.lectureNumber !== undefined) {
+        return a.lectureNumber - b.lectureNumber;
+      }
+      // If only one has lectureNumber, it comes first
+      if (a.lectureNumber !== undefined) return -1;
+      if (b.lectureNumber !== undefined) return 1;
+      // Fallback: sort by title
+      return a.title.localeCompare(b.title);
+    });
+  }, [lectures]);
 
-  if (lectures.length === 0) {
+  if (sortedLectures.length === 0) {
     return (
       <View className="py-12 items-center">
         <Ionicons name={emptyIcon} size={48} color="#9ca3af" />
@@ -211,14 +241,15 @@ export const LectureListWithProgress: React.FC<LectureListWithProgressProps> = (
     <View>
       {showHeader && (
         <Text className="text-xl font-bold text-foreground mb-4">
-          Lectures ({lectures.length})
+          Lectures ({sortedLectures.length})
         </Text>
       )}
 
-      {lectures.map((lecture) => (
+      {sortedLectures.map((lecture) => (
         <LectureItem
           key={lecture.id}
           lecture={lecture}
+          allLectures={sortedLectures}
           collectionSpeakerName={collectionSpeakerName}
           collectionCoverUrl={collectionCoverUrl}
         />
