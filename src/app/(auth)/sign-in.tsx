@@ -34,9 +34,11 @@ export default function Page() {
         Alert.alert("Error", "Invalid email or password");
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
-    } catch (err) {
+    } catch (err: any) {
       // See https://clerk.com/docs/custom-flows/error-handling
       // for more info on error handling
+      const errorMessage = err.errors?.[0]?.message || "Invalid email or password";
+      Alert.alert("Error", errorMessage);
       console.error(JSON.stringify(err, null, 2));
     }
   };
