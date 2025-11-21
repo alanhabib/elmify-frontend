@@ -242,12 +242,18 @@ class AuthManagerClass {
    * Handle authentication errors (like 401 responses)
    */
   async handleAuthError(error: any): Promise<void> {
+    // Clear cache to force fresh token from Clerk
+    this.tokenCache = null;
+
     // Try to refresh token once
     const newToken = await this.refreshAccessToken();
 
     if (!newToken) {
-      // If refresh fails, clear tokens and notify listeners
-      this.clearTokens();
+      // Don't clear tokens here - let Clerk manage the session
+      // Clearing tokens causes unexpected logout while audio is playing
+      console.warn('[AuthManager] Token refresh failed, but not clearing session');
+      // Only notify listeners about the state change
+      this.notifyListeners();
     }
   }
 
@@ -256,6 +262,7 @@ class AuthManagerClass {
    */
   async forceRefresh(): Promise<string | null> {
     this.tokens.accessToken = null; // Clear current token to force refresh
+    this.tokenCache = null; // Clear cache to force fresh token from Clerk
     return await this.refreshAccessToken();
   }
 }

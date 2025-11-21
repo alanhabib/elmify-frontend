@@ -66,7 +66,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   const statsTrackingInterval = useRef<NodeJS.Timeout | null>(null);
   const sleepTimerInterval = useRef<NodeJS.Timeout | null>(null);
   const lastSavedPosition = useRef<number>(0);
-  const isCleaningUp = useRef(false);
+  const isCleaningUp = useRef<boolean>(false);
   const currentLectureId = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasSeekingToSavedPosition = useRef<string | null>(null); // Track which lecture we've seeked for
@@ -75,6 +75,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   // The actual stopping of playback is handled in TrackPlayerService.setup()
   useEffect(() => {
     setTrackLoadedId(null);
+    isCleaningUp.current = false; // Reset cleanup flag on mount
   }, []);
 
   // Fetch saved playback position
@@ -103,14 +104,24 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
       setError(null);
 
       // CRITICAL: Stop previous playback IMMEDIATELY to prevent double audio
-      // Don't await - fire and forget for speed
-      TrackPlayerService.stop().catch(() => {});
+      // Must await to ensure clean state before loading new track
+      try {
+        await TrackPlayerService.stop();
+        console.log("🛑 Stopped previous playback");
+      } catch (e) {
+        // Ignore errors during stop
+      }
       setTrackLoadedId(null); // Clear track loaded flag
-      console.log("🛑 Stopped previous playback");
 
       // Clear intervals
-      if (positionSyncInterval.current) clearInterval(positionSyncInterval.current);
-      if (statsTrackingInterval.current) clearInterval(statsTrackingInterval.current);
+      if (positionSyncInterval.current) {
+        clearInterval(positionSyncInterval.current);
+        positionSyncInterval.current = null;
+      }
+      if (statsTrackingInterval.current) {
+        clearInterval(statsTrackingInterval.current);
+        statsTrackingInterval.current = null;
+      }
 
       try {
         console.log("🎵 Starting to load lecture:", lectureToPlay.id);
@@ -187,8 +198,12 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load audio";
         console.error("❌ PlayerProvider error:", errorMessage);
-        setError(errorMessage);
-        setIsLoading(false);
+
+        // Only set error state if not cleaning up
+        if (!isCleaningUp.current) {
+          setError(errorMessage);
+          setIsLoading(false);
+        }
       }
     },
     []
@@ -358,8 +373,30 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   // Save position on unmount
   useEffect(() => {
     return () => {
+      isCleaningUp.current = true;
+
+      // Cancel any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+
+      // Clear all intervals
+      if (positionSyncInterval.current) {
+        clearInterval(positionSyncInterval.current);
+        positionSyncInterval.current = null;
+      }
+      if (statsTrackingInterval.current) {
+        clearInterval(statsTrackingInterval.current);
+        statsTrackingInterval.current = null;
+      }
+      if (sleepTimerInterval.current) {
+        clearInterval(sleepTimerInterval.current);
+        sleepTimerInterval.current = null;
+      }
+
       const cleanup = async () => {
-        if (lecture && !isCleaningUp.current) {
+        if (lecture) {
           try {
             const position = await TrackPlayerService.getPosition();
             if (position > 0) {
@@ -409,31 +446,57 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     TrackPlayerService.addToQueue(lectures);
   };
 
-  const playNext = async () => {
-    if (queue.length === 0) return;
-
-    const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
-    const nextIndex = currentIndex + 1;
-
-    if (nextIndex < queue.length) {
-      setLecture(queue[nextIndex]);
-    } else if (repeatMode === "all") {
-      setLecture(queue[0]);
+  const playNext = useCallback(async () => {
+    if (queue.length === 0) {
+      console.log("⏭️ No queue to play next from");
+      return;
     }
-  };
 
-  const playPrevious = async () => {
-    if (queue.length === 0) return;
+    try {
+      const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
+      const nextIndex = currentIndex + 1;
 
-    const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
-    const previousIndex = currentIndex - 1;
+      console.log("⏭️ playNext - currentIndex:", currentIndex, "nextIndex:", nextIndex, "queueLength:", queue.length);
 
-    if (previousIndex >= 0) {
-      setLecture(queue[previousIndex]);
-    } else if (repeatMode === "all") {
-      setLecture(queue[queue.length - 1]);
+      if (nextIndex < queue.length) {
+        console.log("⏭️ Playing next lecture:", queue[nextIndex].id);
+        setLecture(queue[nextIndex]);
+      } else if (repeatMode === "all") {
+        console.log("🔁 Repeating queue from start");
+        setLecture(queue[0]);
+      } else {
+        console.log("⏭️ End of queue reached");
+      }
+    } catch (error) {
+      console.error("❌ Error in playNext:", error);
     }
-  };
+  }, [queue, lecture?.id, repeatMode]);
+
+  const playPrevious = useCallback(async () => {
+    if (queue.length === 0) {
+      console.log("⏮️ No queue to play previous from");
+      return;
+    }
+
+    try {
+      const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
+      const previousIndex = currentIndex - 1;
+
+      console.log("⏮️ playPrevious - currentIndex:", currentIndex, "previousIndex:", previousIndex);
+
+      if (previousIndex >= 0) {
+        console.log("⏮️ Playing previous lecture:", queue[previousIndex].id);
+        setLecture(queue[previousIndex]);
+      } else if (repeatMode === "all") {
+        console.log("🔁 Repeating queue from end");
+        setLecture(queue[queue.length - 1]);
+      } else {
+        console.log("⏮️ Beginning of queue reached");
+      }
+    } catch (error) {
+      console.error("❌ Error in playPrevious:", error);
+    }
+  }, [queue, lecture?.id, repeatMode]);
 
   const toggleShuffle = () => {
     setShuffle(!shuffle);

@@ -119,16 +119,21 @@ export class TrackPlayerService {
       has_url: !!track.url,
     });
 
-    await TrackPlayer.reset();
-    await TrackPlayer.add(track);
+    try {
+      await TrackPlayer.reset();
+      await TrackPlayer.add(track);
 
-    // Seek to saved position BEFORE playing to avoid hearing the beginning
-    if (startPosition && startPosition > 0) {
-      console.log(`[TrackPlayer] Seeking to ${startPosition}s before playing`);
-      await TrackPlayer.seekTo(startPosition);
+      // Seek to saved position BEFORE playing to avoid hearing the beginning
+      if (startPosition && startPosition > 0) {
+        console.log(`[TrackPlayer] Seeking to ${startPosition}s before playing`);
+        await TrackPlayer.seekTo(startPosition);
+      }
+
+      await TrackPlayer.play();
+    } catch (error) {
+      console.error('[TrackPlayer] Error in loadAndPlay:', error);
+      throw error; // Re-throw so caller can handle
     }
-
-    await TrackPlayer.play();
   }
 
   /**
@@ -149,7 +154,12 @@ export class TrackPlayerService {
    * Stop and reset player
    */
   static async stop(): Promise<void> {
-    await TrackPlayer.reset();
+    try {
+      await TrackPlayer.reset();
+    } catch (error) {
+      console.error('[TrackPlayer] Error in stop:', error);
+      // Don't throw - stop should be safe to call anytime
+    }
   }
 
   /**

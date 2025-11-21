@@ -1,18 +1,34 @@
-import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
-import { Entypo, Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect } from 'react';
-import { BlurView } from '@react-native-community/blur';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
+import { Entypo, Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useEffect } from "react";
+import { BlurView } from "@react-native-community/blur";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
 
-import PlaybackBar from '@/components/PlaybackBar';
-import { SleepTimerModal } from '@/components/SleepTimerModal';
-import { DownloadButton } from '@/components/DownloadButton';
-import { usePlayer } from '@/providers/PlayerProvider';
-import { useFavoriteCheck, useAddFavorite, useRemoveFavorite } from '@/queries/hooks/favorites';
-import { formatTime } from '@/utils/timeFormat';
+import PlaybackBar from "@/components/PlaybackBar";
+import { SleepTimerModal } from "@/components/SleepTimerModal";
+import { DownloadButton } from "@/components/DownloadButton";
+import { usePlayer } from "@/providers/PlayerProvider";
+import {
+  useFavoriteCheck,
+  useAddFavorite,
+  useRemoveFavorite,
+} from "@/queries/hooks/favorites";
+import { formatTime } from "@/utils/timeFormat";
 
 const PLAYBACK_SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 const SWIPE_THRESHOLD = 100;
@@ -66,7 +82,9 @@ export default function PlayerScreen() {
   }));
 
   // Favorites
-  const { data: isFavorited = false } = useFavoriteCheck(lecture?.id?.toString());
+  const { data: isFavorited = false } = useFavoriteCheck(
+    lecture?.id?.toString()
+  );
   const addFavoriteMutation = useAddFavorite();
   const removeFavoriteMutation = useRemoveFavorite();
 
@@ -122,8 +140,13 @@ export default function PlayerScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-background p-4">
         <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
-        <Text className="text-foreground text-lg mt-4 text-center">{error}</Text>
-        <Pressable onPress={() => router.back()} className="bg-primary px-6 py-3 rounded-lg mt-4">
+        <Text className="text-foreground text-lg mt-4 text-center">
+          {error}
+        </Text>
+        <Pressable
+          onPress={() => router.back()}
+          className="bg-primary px-6 py-3 rounded-lg mt-4"
+        >
           <Text className="text-primary-foreground font-semibold">Go Back</Text>
         </Pressable>
       </View>
@@ -135,9 +158,16 @@ export default function PlayerScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-background p-4">
         <Ionicons name="musical-notes-outline" size={64} color="#9ca3af" />
-        <Text className="text-foreground text-lg mt-4">No lecture selected</Text>
-        <Pressable onPress={() => router.back()} className="bg-primary px-6 py-3 rounded-lg mt-4">
-          <Text className="text-primary-foreground font-semibold">Browse Lectures</Text>
+        <Text className="text-foreground text-lg mt-4">
+          No lecture selected
+        </Text>
+        <Pressable
+          onPress={() => router.back()}
+          className="bg-primary px-6 py-3 rounded-lg mt-4"
+        >
+          <Text className="text-primary-foreground font-semibold">
+            Browse Lectures
+          </Text>
         </Pressable>
       </View>
     );
@@ -186,18 +216,27 @@ export default function PlayerScreen() {
 
           {/* Controls section with blur */}
           <BlurView
-            style={[styles.controlsContainer, { borderTopLeftRadius: 24, borderTopRightRadius: 24 }]}
+            style={[
+              styles.controlsContainer,
+              { borderTopLeftRadius: 24, borderTopRightRadius: 24 },
+            ]}
             blurType="dark"
             blurAmount={30}
             reducedTransparencyFallbackColor="rgba(0,0,0,0.7)"
           >
             {/* Title and author */}
             <View className="items-center px-4 mt-4">
-              <Text className="text-white text-2xl font-bold text-center" numberOfLines={2}>
+              <Text
+                className="text-white text-2xl font-bold text-center"
+                numberOfLines={2}
+              >
                 {lecture.title}
               </Text>
               {lecture.author && (
-                <Text className="text-white/70 text-base text-center mt-1" numberOfLines={1}>
+                <Text
+                  className="text-white/70 text-base text-center mt-1"
+                  numberOfLines={1}
+                >
                   {lecture.author}
                 </Text>
               )}
@@ -215,19 +254,32 @@ export default function PlayerScreen() {
             {/* Main playback controls */}
             <View className="flex-row justify-between items-center mt-6 px-6">
               <Pressable onPress={playPrevious}>
-                <Ionicons name="play-skip-back" size={40} color="white" />
+                <Ionicons
+                  name="play-skip-back-outline"
+                  size={40}
+                  color="white"
+                />
               </Pressable>
 
               {/* 15 seconds backward */}
               <Pressable onPress={() => seekTo(Math.max(0, currentTime - 15))}>
-                <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <Ionicons
-                    name="refresh"
+                    name="play-forward-outline"
                     size={44}
                     color="white"
-                    style={{ position: 'absolute', transform: [{ scaleX: -1 }] }}
+                    style={{
+                      position: "absolute",
+                      transform: [{ scaleX: -1 }],
+                    }}
                   />
-                  <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>15</Text>
                 </View>
               </Pressable>
 
@@ -237,7 +289,7 @@ export default function PlayerScreen() {
                 style={styles.playButton}
               >
                 <Ionicons
-                  name={isPlaying ? 'pause' : 'play'}
+                  name={isPlaying ? "pause" : "play"}
                   size={40}
                   color="black"
                   style={isPlaying ? {} : { marginLeft: 4 }}
@@ -245,20 +297,32 @@ export default function PlayerScreen() {
               </Pressable>
 
               {/* 15 seconds forward */}
-              <Pressable onPress={() => seekTo(Math.min(duration, currentTime + 15))}>
-                <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable
+                onPress={() => seekTo(Math.min(duration, currentTime + 15))}
+              >
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <Ionicons
-                    name="refresh"
+                    name="play-forward-outline"
                     size={44}
                     color="white"
-                    style={{ position: 'absolute' }}
+                    style={{ position: "absolute" }}
                   />
-                  <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>15</Text>
                 </View>
               </Pressable>
 
               <Pressable onPress={playNext}>
-                <Ionicons name="play-skip-forward" size={40} color="white" />
+                <Ionicons
+                  name="play-skip-forward-outline"
+                  size={40}
+                  color="white"
+                />
               </Pressable>
             </View>
 
@@ -266,32 +330,45 @@ export default function PlayerScreen() {
             <View className="flex-row justify-center gap-3 mt-4 px-6">
               <Pressable
                 onPress={toggleShuffle}
-                className={`px-3 py-2 rounded-full relative ${shuffle ? 'bg-purple-500/30' : 'bg-white/10'}`}
+                className={`px-3 py-2 rounded-full relative ${
+                  shuffle ? "bg-purple-500/30" : "bg-white/10"
+                }`}
               >
                 <Ionicons name="shuffle" size={20} color="white" />
               </Pressable>
 
-              <Pressable onPress={cyclePlaybackSpeed} className="bg-white/10 px-3 py-2 rounded-full">
-                <Text className="text-white font-semibold text-sm">{playbackSpeed}x</Text>
+              <Pressable
+                onPress={cyclePlaybackSpeed}
+                className="bg-white/10 px-3 py-2 rounded-full"
+              >
+                <Text className="text-white font-semibold text-sm">
+                  {playbackSpeed}x
+                </Text>
               </Pressable>
 
               <Pressable
                 onPress={cycleRepeatMode}
-                className={`px-3 py-2 rounded-full relative ${repeatMode !== 'off' ? 'bg-purple-500/30' : 'bg-white/10'}`}
+                className={`px-3 py-2 rounded-full relative ${
+                  repeatMode !== "off" ? "bg-purple-500/30" : "bg-white/10"
+                }`}
               >
                 <Ionicons
-                  name={repeatMode === 'one' ? 'repeat-outline' : 'repeat'}
+                  name={repeatMode === "one" ? "repeat-outline" : "repeat"}
                   size={20}
                   color="white"
                 />
-                {repeatMode === 'one' && (
-                  <Text className="absolute top-0.5 right-0.5 text-white text-[10px] font-bold">1</Text>
+                {repeatMode === "one" && (
+                  <Text className="absolute top-0.5 right-0.5 text-white text-[10px] font-bold">
+                    1
+                  </Text>
                 )}
               </Pressable>
 
               <Pressable
                 onPress={() => setShowSleepTimerModal(true)}
-                className={`px-3 py-2 rounded-full ${sleepTimer !== null ? 'bg-purple-500/30' : 'bg-white/10'}`}
+                className={`px-3 py-2 rounded-full ${
+                  sleepTimer !== null ? "bg-purple-500/30" : "bg-white/10"
+                }`}
               >
                 <View className="flex-row items-center gap-1">
                   <Ionicons name="moon" size={20} color="white" />
@@ -308,9 +385,9 @@ export default function PlayerScreen() {
             <View className="flex-row justify-center gap-8 mt-4 mb-6 px-6">
               <Pressable onPress={toggleFavorite}>
                 <Ionicons
-                  name={isFavorited ? 'heart' : 'heart-outline'}
+                  name={isFavorited ? "heart" : "heart-outline"}
                   size={32}
-                  color={isFavorited ? '#ef4444' : 'white'}
+                  color={isFavorited ? "#a855f7" : "white"}
                 />
               </Pressable>
 
@@ -334,15 +411,15 @@ export default function PlayerScreen() {
 const styles = StyleSheet.create({
   fullScreen: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   safeArea: {
     flex: 1,
   },
   artworkContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 24,
     marginTop: 120,
   },
@@ -353,9 +430,9 @@ const styles = StyleSheet.create({
   playButton: {
     width: 80,
     height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
     borderRadius: 40,
   },
 });

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Image, ActivityIndicator } from 'react-native';
 import { useRecentLectures } from '@/queries/hooks/playback';
 import { useLecturePlayer } from '@/hooks/useLecturePlayer';
+import { useCurrentUser } from '@/queries/hooks/user';
 import type { PlaybackPositionWithLectureResponse } from '@/api/types';
 
 type LectureCardProps = {
@@ -77,6 +78,13 @@ const LectureCard = ({ position, onCardClick }: LectureCardProps) => {
 export const RecentLectures = () => {
   const playLecture = useLecturePlayer();
   const { data: recentLectures = [], isLoading, error } = useRecentLectures({ limit: 4 });
+  const { data: user } = useCurrentUser();
+
+  // Filter out premium lectures for non-premium users (defense-in-depth)
+  const filteredLectures = useMemo(() => {
+    if (user?.isPremium) return recentLectures;
+    return recentLectures.filter(position => !position.lecture.isPremium);
+  }, [recentLectures, user?.isPremium]);
 
   const handleCardClick = (position: PlaybackPositionWithLectureResponse) => {
     playLecture({
@@ -120,7 +128,7 @@ export const RecentLectures = () => {
   }
 
   // Empty state - no recent lectures
-  if (recentLectures.length === 0) {
+  if (filteredLectures.length === 0) {
     return (
       <View className="space-y-4">
         <View className="flex-row items-center justify-between px-1">
@@ -150,7 +158,7 @@ export const RecentLectures = () => {
         contentContainerStyle={{ paddingLeft: 4, paddingRight: 20 }}
         className="overflow-visible"
       >
-        {recentLectures.map((position) => (
+        {filteredLectures.map((position) => (
           <LectureCard
             key={position.lectureId}
             position={position}

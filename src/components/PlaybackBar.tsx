@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { View, Text, LayoutChangeEvent } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { useSharedValue, useAnimatedStyle, runOnJS } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  runOnJS,
+} from "react-native-reanimated";
 
 type PlaybackBarProps = {
   currentTime: number;
@@ -19,7 +23,8 @@ export default function PlaybackBar({
   const dragProgress = useSharedValue(0);
 
   // Safely calculate progress, preventing NaN or Infinity
-  const progress = duration > 0 ? Math.min(Math.max(currentTime / duration, 0), 1) : 0;
+  const progress =
+    duration > 0 ? Math.min(Math.max(currentTime / duration, 0), 1) : 0;
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -28,7 +33,10 @@ export default function PlaybackBar({
   };
 
   const handleSeek = (percentage: number) => {
-    const seekToSeconds = Math.min(Math.max(duration * percentage, 0), duration);
+    const seekToSeconds = Math.min(
+      Math.max(duration * percentage, 0),
+      duration
+    );
     onSeek(seekToSeconds);
   };
 
@@ -57,11 +65,10 @@ export default function PlaybackBar({
     });
 
   // Tap gesture for quick seeks
-  const tapGesture = Gesture.Tap()
-    .onEnd((event) => {
-      const percentage = Math.min(Math.max(event.x / width, 0), 1);
-      runOnJS(handleSeek)(percentage);
-    });
+  const tapGesture = Gesture.Tap().onEnd((event) => {
+    const percentage = Math.min(Math.max(event.x / width, 0), 1);
+    runOnJS(handleSeek)(percentage);
+  });
 
   const composedGesture = Gesture.Race(panGesture, tapGesture);
 
@@ -86,7 +93,9 @@ export default function PlaybackBar({
             {/* Filled progress */}
             <View
               className="bg-primary h-full rounded-full"
-              style={{ width: `${(isDragging ? dragProgress.value : progress) * 100}%` }}
+              style={{
+                width: `${(isDragging ? dragProgress.value : progress) * 100}%`,
+              }}
             />
           </View>
           {/* Handle */}
@@ -94,7 +103,7 @@ export default function PlaybackBar({
             className="absolute w-5 h-5 -translate-x-1/2 rounded-full bg-primary"
             style={{
               left: `${(isDragging ? dragProgress.value : progress) * 100}%`,
-              shadowColor: '#a855f7',
+              shadowColor: "#a855f7",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.3,
               shadowRadius: 4,
@@ -107,7 +116,9 @@ export default function PlaybackBar({
         <Text className="text-muted-foreground text-sm">
           {isDragging ? formatTime(displayTime) : formatTime(currentTime)}
         </Text>
-        <Text className="text-muted-foreground text-sm">{formatTime(duration)}</Text>
+        <Text className="text-muted-foreground text-sm">
+          {formatTime(duration)}
+        </Text>
       </View>
     </View>
   );

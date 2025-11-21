@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { Stack, router } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 
 // Hooks
 import { useAuthManager } from "@/hooks/auth/useAuthManager";
@@ -57,7 +57,12 @@ export default function Settings() {
           headerShown: true,
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <Feather name="arrow-left" size={24} color="#a855f7" />
+              <Ionicons
+                className="ml-2"
+                name="chevron-back-outline"
+                size={28}
+                color="#a855f7"
+              />
             </TouchableOpacity>
           ),
         }}

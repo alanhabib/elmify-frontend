@@ -5,7 +5,6 @@
  * Uses the new streaming API for presigned URL generation.
  */
 
-import { AuthManager } from "@/services/auth/authManager";
 import { UILecture } from "@/types/ui";
 import { streamingAPI } from "@/api/endpoints/streaming";
 
@@ -52,24 +51,9 @@ export class StreamingService {
         console.error('[StreamingService] Failed to get streaming URL:', {
           lectureId: lecture.id,
           error: response.error,
+          status: response.status,
         });
-
-        // Handle authentication errors - try to refresh and retry once
-        if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
-          console.log('[StreamingService] Got 401, attempting token refresh and retry...');
-          await AuthManager.forceRefresh();
-
-          // Retry the request once after token refresh
-          const retryResponse = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
-          if (retryResponse.success && retryResponse.data?.url) {
-            console.log('[StreamingService] Retry successful after token refresh');
-            let retryUrl = retryResponse.data.url;
-            retryUrl = encodeURI(retryUrl);
-            return retryUrl;
-          }
-          console.error('[StreamingService] Retry failed after token refresh');
-        }
-
+        // Note: apiClient already handles 401 retry with token refresh
         return null;
       }
 
