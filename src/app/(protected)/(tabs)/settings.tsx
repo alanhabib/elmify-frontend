@@ -1,19 +1,21 @@
-import React from "react";
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@clerk/clerk-expo";
 
 // Hooks
 import { useAuthManager } from "@/hooks/auth/useAuthManager";
-import { useCurrentUser, useUpdatePreferences } from "@/queries/hooks/user";
+import { useCurrentUser, useUpdatePreferences, useDeleteAccount } from "@/queries/hooks/user";
 import { useOfflineContent } from "@/hooks/useOfflineContent";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { useDownloads } from "@/hooks/useDownload";
 
 // Components
 import { AppearanceSection } from "@/components/profile/AppearanceSection";
 import { OfflineContentSection } from "@/components/profile/OfflineContentSection";
 import { AccountActionsSection } from "@/components/profile/AccountActionsSection";
+import { DeleteAccountModal } from "@/components/profile/modals/DeleteAccountModal";
 
 export default function Settings() {
   const { isSignedIn } = useAuth();
@@ -21,7 +23,10 @@ export default function Settings() {
   const { signOut } = useAuthManager();
   const { data: user, isLoading } = useCurrentUser();
   const updatePreferencesMutation = useUpdatePreferences();
+  const deleteAccountMutation = useDeleteAccount();
   const offlineContent = useOfflineContent();
+  const { clearAllDownloads } = useDownloads();
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   // Guest mode - show sign in prompt
   if (!isSignedIn) {
@@ -94,6 +99,30 @@ export default function Settings() {
     await signOut();
   };
 
+  const handleDeleteAccount = async (confirmEmail: string) => {
+    try {
+      // Delete from backend
+      await deleteAccountMutation.mutateAsync(confirmEmail);
+
+      // Clear local downloads
+      await clearAllDownloads();
+
+      // Close modal
+      setIsDeleteModalVisible(false);
+
+      // Sign out from Clerk
+      await signOut();
+
+      Alert.alert(
+        "Account Deleted",
+        "Your account has been permanently deleted.",
+        [{ text: "OK" }]
+      );
+    } catch (error) {
+      // Error will be shown inline in the modal via the error prop
+    }
+  };
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-background">
@@ -150,10 +179,26 @@ export default function Settings() {
 
           {/* Account Actions */}
           <View className="mb-6">
-            <AccountActionsSection onSignOut={handleSignOut} />
+            <AccountActionsSection
+              onSignOut={handleSignOut}
+              onDeleteAccount={() => setIsDeleteModalVisible(true)}
+            />
           </View>
         </View>
       </ScrollView>
+
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        isVisible={isDeleteModalVisible}
+        userEmail={user?.email || ""}
+        onClose={() => {
+          setIsDeleteModalVisible(false);
+          deleteAccountMutation.reset();
+        }}
+        onDelete={handleDeleteAccount}
+        isDeleting={deleteAccountMutation.isPending}
+        error={deleteAccountMutation.error?.message || null}
+      />
     </>
   );
 }

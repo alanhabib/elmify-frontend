@@ -11,10 +11,12 @@ import {
 
 interface AccountActionsSectionProps {
   onSignOut: () => void;
+  onDeleteAccount: () => void;
 }
 
 export const AccountActionsSection: React.FC<AccountActionsSectionProps> = ({
   onSignOut,
+  onDeleteAccount,
 }) => {
   const handleSignOut = () => {
     Alert.alert(
@@ -35,23 +37,7 @@ export const AccountActionsSection: React.FC<AccountActionsSectionProps> = ({
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This action cannot be undone. All your data, including downloaded books and progress, will be permanently deleted.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete Account",
-          style: "destructive",
-          onPress: () => {
-            // TODO: Implement delete account functionality
-          },
-        },
-      ]
-    );
+    onDeleteAccount();
   };
 
   const handleContactSupport = () => {

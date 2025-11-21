@@ -104,12 +104,36 @@ export function useSyncUser() {
       return response.data!;
     },
     onSuccess: (data) => {
-      console.log("✅ User synced successfully:", data);
+      console.log("User synced successfully:", data.id);
       // Update the user profile cache with synced data
       queryClient.setQueryData(queryKeys.user.profile(), data);
     },
     onError: (error) => {
-      console.error("❌ Failed to sync user:", error);
+      console.error("Failed to sync user:", error);
+    },
+  });
+}
+
+/**
+ * Delete user account
+ * Permanently deletes the user's account and all associated data
+ */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (confirmEmail: string) => {
+      const response = await userAPI.deleteAccount(confirmEmail);
+
+      if (response.error || !response.success) {
+        throw new Error(response.error || "Failed to delete account");
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      // Clear all cached data
+      queryClient.clear();
     },
   });
 }

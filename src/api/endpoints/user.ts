@@ -104,3 +104,12 @@ export async function updatePreferences(
 ): Promise<APIResponse<UserResponse>> {
   return apiClient.put<UserResponse>("/users/me/preferences", preferences);
 }
+
+/**
+ * Delete user account
+ * Permanently deletes the user's account and all associated data
+ * Requires email confirmation
+ */
+export async function deleteAccount(confirmEmail: string): Promise<APIResponse<void>> {
+  return apiClient.delete<void>(`/users/me?confirmEmail=${encodeURIComponent(confirmEmail)}`);
+}
