@@ -119,8 +119,6 @@ export function useSyncUser() {
  * Permanently deletes the user's account and all associated data
  */
 export function useDeleteAccount() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (confirmEmail: string) => {
       const response = await userAPI.deleteAccount(confirmEmail);
@@ -131,10 +129,8 @@ export function useDeleteAccount() {
 
       return response.data;
     },
-    onSuccess: () => {
-      // Clear all cached data
-      queryClient.clear();
-    },
+    // Note: Don't clear queryClient here - the signOut() in the component
+    // will handle session cleanup and prevent token refresh loops
   });
 }
 

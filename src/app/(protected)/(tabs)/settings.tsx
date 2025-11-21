@@ -104,14 +104,15 @@ export default function Settings() {
       // Delete from backend (this also deletes from Clerk)
       await deleteAccountMutation.mutateAsync(confirmEmail);
 
+      // IMPORTANT: Sign out IMMEDIATELY after successful delete
+      // This clears the local Clerk session before any token refresh attempts
+      await signOut();
+
       // Clear local downloads
       await clearAllDownloads();
 
       // Close modal
       setIsDeleteModalVisible(false);
-
-      // Sign out locally to clear cached session
-      await signOut();
 
       // Navigate to sign-in and show confirmation
       router.replace('/sign-in');
