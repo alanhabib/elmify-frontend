@@ -1,4 +1,4 @@
-import { Event } from 'react-native-track-player';
+import TrackPlayer, { Event } from 'react-native-track-player';
 import { TrackPlayerService } from './TrackPlayerService';
 
 /**
@@ -11,90 +11,43 @@ export async function setupTrackPlayer() {
 
 /**
  * Playback service that handles remote events (lock screen controls)
- * This runs in a separate context from the main app
+ *
+ * IMPORTANT: This runs in an isolated headless JavaScript context, separate from the main app.
+ * We must use TrackPlayer directly here, not TrackPlayerService, because custom wrapper
+ * classes don't share state with the headless context.
  */
 export async function PlaybackService() {
-  TrackPlayerService.addEventListener(Event.RemotePlay, async () => {
-    try {
-      await TrackPlayerService.play();
-    } catch (error) {
-      console.error('RemotePlay error:', error);
-    }
+  TrackPlayer.addEventListener(Event.RemotePlay, () => TrackPlayer.play());
+
+  TrackPlayer.addEventListener(Event.RemotePause, () => TrackPlayer.pause());
+
+  TrackPlayer.addEventListener(Event.RemoteNext, () => TrackPlayer.skipToNext());
+
+  TrackPlayer.addEventListener(Event.RemotePrevious, () => TrackPlayer.skipToPrevious());
+
+  TrackPlayer.addEventListener(Event.RemoteSeek, (data) => TrackPlayer.seekTo(data.position));
+
+  TrackPlayer.addEventListener(Event.RemoteJumpForward, async (data) => {
+    const position = await TrackPlayer.getPosition();
+    const duration = await TrackPlayer.getDuration();
+    await TrackPlayer.seekTo(Math.min(position + data.interval, duration));
   });
 
-  TrackPlayerService.addEventListener(Event.RemotePause, async () => {
-    try {
-      await TrackPlayerService.pause();
-    } catch (error) {
-      console.error('RemotePause error:', error);
-    }
+  TrackPlayer.addEventListener(Event.RemoteJumpBackward, async (data) => {
+    const position = await TrackPlayer.getPosition();
+    await TrackPlayer.seekTo(Math.max(position - data.interval, 0));
   });
 
-  TrackPlayerService.addEventListener(Event.RemoteNext, async () => {
-    try {
-      await TrackPlayerService.skipToNext();
-    } catch (error) {
-      console.error('RemoteNext error:', error);
-    }
-  });
-
-  TrackPlayerService.addEventListener(Event.RemotePrevious, async () => {
-    try {
-      await TrackPlayerService.skipToPrevious();
-    } catch (error) {
-      console.error('RemotePrevious error:', error);
-    }
-  });
-
-  TrackPlayerService.addEventListener(Event.RemoteSeek, async (data: { position: number }) => {
-    try {
-      await TrackPlayerService.seekTo(data.position);
-    } catch (error) {
-      console.error('RemoteSeek error:', error);
-    }
-  });
-
-  TrackPlayerService.addEventListener(Event.RemoteJumpForward, async (data: { interval: number }) => {
-    try {
-      const position = await TrackPlayerService.getPosition();
-      const duration = await TrackPlayerService.getDuration();
-      const newPosition = Math.min(position + data.interval, duration);
-      await TrackPlayerService.seekTo(newPosition);
-    } catch (error) {
-      console.error('RemoteJumpForward error:', error);
-    }
-  });
-
-  TrackPlayerService.addEventListener(Event.RemoteJumpBackward, async (data: { interval: number }) => {
-    try {
-      const position = await TrackPlayerService.getPosition();
-      const newPosition = Math.max(position - data.interval, 0);
-      await TrackPlayerService.seekTo(newPosition);
-    } catch (error) {
-      console.error('RemoteJumpBackward error:', error);
-    }
-  });
-
-  TrackPlayerService.addEventListener(Event.RemoteStop, async () => {
-    try {
-      await TrackPlayerService.stop();
-    } catch (error) {
-      console.error('RemoteStop error:', error);
-    }
-  });
+  TrackPlayer.addEventListener(Event.RemoteStop, () => TrackPlayer.reset());
 
   // Handle audio interruptions (phone calls, etc.)
-  TrackPlayerService.addEventListener(Event.RemoteDuck, async (event: { paused?: boolean; permanent?: boolean }) => {
-    try {
-      if (event.paused) {
-        await TrackPlayerService.pause();
-      } else if (event.permanent) {
-        await TrackPlayerService.stop();
-      } else {
-        await TrackPlayerService.play();
-      }
-    } catch (error) {
-      console.error('RemoteDuck error:', error);
+  TrackPlayer.addEventListener(Event.RemoteDuck, async (event) => {
+    if (event.paused) {
+      await TrackPlayer.pause();
+    } else if (event.permanent) {
+      await TrackPlayer.reset();
+    } else {
+      await TrackPlayer.play();
     }
   });
 }

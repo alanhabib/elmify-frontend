@@ -88,10 +88,12 @@ export function useDownload(lectureId: string) {
 export function useDownloads() {
   const [downloads, setDownloads] = useState<DownloadedLecture[]>([]);
   const [storageUsed, setStorageUsed] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Only true on initial load
+  const [isRefreshing, setIsRefreshing] = useState(false); // True during refreshes
 
   const refreshDownloads = useCallback(async () => {
-    setIsLoading(true);
+    // Only set isLoading on first load, use isRefreshing for subsequent calls
+    setIsRefreshing(true);
     try {
       const allDownloads = await DownloadService.getAllDownloads();
       const totalStorage = await DownloadService.getTotalStorageUsed();
@@ -101,7 +103,8 @@ export function useDownloads() {
     } catch (error) {
       console.error("[useDownloads] Failed to refresh downloads:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Initial load complete
+      setIsRefreshing(false);
     }
   }, []);
 
@@ -128,6 +131,7 @@ export function useDownloads() {
     downloads,
     storageUsed,
     isLoading,
+    isRefreshing,
     refreshDownloads,
     deleteDownload,
     deleteAllDownloads,
