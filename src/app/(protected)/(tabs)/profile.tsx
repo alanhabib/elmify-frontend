@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { useAuth } from "@clerk/clerk-expo";
 
 // Hooks
 import { useCurrentUser, useUpdatePreferences } from "@/queries/hooks/user";
 import { useDailySummary, useStreaks } from "@/queries/hooks/stats";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 // Components
 import { AccountSection } from "@/components/profile/AccountSection";
@@ -26,6 +28,8 @@ export interface TodayProgress {
 }
 
 export default function Profile() {
+  const { isSignedIn } = useAuth();
+  const { disableGuestMode } = useGuestMode();
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [toast, setToast] = useState<{
     visible: boolean;
@@ -37,7 +41,50 @@ export default function Profile() {
     type: 'success',
   });
 
-  // Fetch real data from backend
+  // Guest mode - show sign in prompt
+  if (!isSignedIn) {
+    return (
+      <View className="flex-1 bg-background items-center justify-center px-6">
+        <View className="bg-card rounded-2xl p-8 items-center border border-border w-full max-w-sm">
+          <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-6">
+            <Feather name="user" size={40} color="#a855f7" />
+          </View>
+          <Text className="text-foreground text-2xl font-bold text-center mb-3">
+            Sign In Required
+          </Text>
+          <Text className="text-muted-foreground text-center mb-8 leading-6">
+            Create a free account to track your listening progress, set daily goals, and sync across devices.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              disableGuestMode();
+              router.push('/sign-in');
+            }}
+            className="bg-primary w-full py-4 rounded-xl items-center mb-3"
+            activeOpacity={0.8}
+          >
+            <Text className="text-primary-foreground font-semibold text-base">
+              Sign In
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              disableGuestMode();
+              router.push('/sign-up');
+            }}
+            className="w-full py-4 rounded-xl items-center border border-border"
+            activeOpacity={0.8}
+          >
+            <Text className="text-foreground font-medium text-base">
+              Create Account
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // Fetch real data from backend (only when signed in)
   const {
     data: user,
     isLoading: isLoadingUser,

@@ -52,18 +52,19 @@ export class APIClient {
   /**
    * Get authentication headers from AuthManager
    * Centralizes auth logic in one place
+   * Returns headers without token for guest mode (public endpoints)
    */
   private async getAuthHeaders(): Promise<Record<string, string>> {
     try {
       const headers = await AuthManager.getAuthHeaders();
-
       return headers;
     } catch (error) {
-      throw new Error(
-        `Authentication failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      // For guest mode, return basic headers without auth token
+      // Public endpoints will work, protected endpoints will return 401
+      console.warn('[APIClient] Auth headers failed, using unauthenticated request');
+      return {
+        "Content-Type": "application/json",
+      };
     }
   }
 

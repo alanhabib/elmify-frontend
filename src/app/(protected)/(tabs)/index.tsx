@@ -6,6 +6,7 @@
 
 import { useCallback, useMemo } from "react";
 import { ScrollView, View, Text, ActivityIndicator } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
 import { WeekDayCircles } from "@/components/dashboard/WeekDayCircles";
 import { WeeklyReminderCard } from "@/components/dashboard/WeeklyReminderCard";
 import { TrendingLectures } from "@/components/dashboard/TrendingLectures";
@@ -21,6 +22,7 @@ import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 
 export default function Dashboard() {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
   const { filterAccessible } = usePremiumAccess();
 
   // Fetch speakers using centralized hook
@@ -43,9 +45,6 @@ export default function Dashboard() {
     },
     [router]
   );
-
-  // TODO: Replace with actual auth when ready
-  const isSignedIn = true;
 
   const isLoading = isLoadingSpeakers;
   const hasError = !!speakersError;

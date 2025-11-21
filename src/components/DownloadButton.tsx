@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { useDownload } from '@/hooks/useDownload';
 import { UILecture } from '@/types/ui';
 import { Toast } from '@/components/ui/Toast';
+import { useGuestMode } from '@/hooks/useGuestMode';
+import { ACCOUNT_REQUIRED_FEATURES } from '@/store/guestMode';
 
 type DownloadButtonProps = {
   lecture: UILecture;
@@ -33,6 +35,7 @@ export function DownloadButton({ lecture, size = 24, showProgress = false }: Dow
     deleteDownload,
   } = useDownload(lecture.id);
 
+  const { requireAuth } = useGuestMode();
   const [toast, setToast] = useState<ToastState>(initialToastState);
 
   const showToast = useCallback((message: string, type: ToastState['type']) => {
@@ -44,6 +47,11 @@ export function DownloadButton({ lecture, size = 24, showProgress = false }: Dow
   }, []);
 
   const handlePress = useCallback(async () => {
+    // Check auth for downloads (not for cancel/delete which should always work)
+    if (!isDownloading && !isDownloaded) {
+      if (!requireAuth(ACCOUNT_REQUIRED_FEATURES.DOWNLOADS)) return;
+    }
+
     try {
       if (isDownloading) {
         await cancelDownload();
@@ -59,7 +67,7 @@ export function DownloadButton({ lecture, size = 24, showProgress = false }: Dow
       const errorMessage = err instanceof Error ? err.message : 'Download failed';
       showToast(errorMessage, 'error');
     }
-  }, [isDownloading, isDownloaded, lecture, startDownload, cancelDownload, deleteDownload, showToast]);
+  }, [isDownloading, isDownloaded, lecture, startDownload, cancelDownload, deleteDownload, showToast, requireAuth]);
 
   const renderButton = () => {
     if (isDownloading) {

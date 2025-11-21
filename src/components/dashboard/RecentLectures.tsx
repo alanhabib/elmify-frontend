@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, Image, ActivityIndicator } from 'rea
 import { useRecentLectures } from '@/queries/hooks/playback';
 import { useLecturePlayer } from '@/hooks/useLecturePlayer';
 import { useCurrentUser } from '@/queries/hooks/user';
+import { useAuth } from '@clerk/clerk-expo';
 import type { PlaybackPositionWithLectureResponse } from '@/api/types';
 
 type LectureCardProps = {
@@ -76,9 +77,18 @@ const LectureCard = ({ position, onCardClick }: LectureCardProps) => {
 };
 
 export const RecentLectures = () => {
+  const { isSignedIn } = useAuth();
   const playLecture = useLecturePlayer();
-  const { data: recentLectures = [], isLoading, error } = useRecentLectures({ limit: 4 });
+  const { data: recentLectures = [], isLoading, error } = useRecentLectures({
+    limit: 4,
+    enabled: !!isSignedIn // Only fetch when signed in
+  });
   const { data: user } = useCurrentUser();
+
+  // Don't show this section for guest users
+  if (!isSignedIn) {
+    return null;
+  }
 
   // Filter out premium lectures for non-premium users (defense-in-depth)
   const filteredLectures = useMemo(() => {

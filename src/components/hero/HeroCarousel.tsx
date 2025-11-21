@@ -35,6 +35,7 @@ import { Card } from "@/components/ui/primitives";
 import { useRecentLectures } from "@/queries/hooks/playback";
 import { usePlayer } from "@/providers/PlayerProvider";
 import { Feather } from "@expo/vector-icons";
+import { useAuth } from "@clerk/clerk-expo";
 import type { PlaybackPositionWithLectureResponse } from "@/api/types";
 
 // ============================================================================
@@ -333,6 +334,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   onLecturePress,
 }) => {
   const { spacing } = useTheme();
+  const { isSignedIn } = useAuth();
   const {
     lecture: currentLecture,
     isPlaying,
@@ -342,8 +344,16 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   } = usePlayer();
   const router = useRouter();
 
-  // Fetch recent lectures
-  const { data: recentLectures = [], isLoading } = useRecentLectures({ limit });
+  // Fetch recent lectures - only when signed in
+  const { data: recentLectures = [], isLoading } = useRecentLectures({
+    limit,
+    enabled: !!isSignedIn
+  });
+
+  // Don't show for guests
+  if (!isSignedIn) {
+    return null;
+  }
 
   // Memoize the lecture press handler
   const handleLecturePress = useMemo(

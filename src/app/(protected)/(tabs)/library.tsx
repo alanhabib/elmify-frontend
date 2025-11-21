@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from "react";
-import { Text, View, ActivityIndicator, ScrollView, Pressable } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Text, View, ActivityIndicator, ScrollView, Pressable, TouchableOpacity } from "react-native";
+import { Ionicons, Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useAuth } from "@clerk/clerk-expo";
 import { useFavorites } from "@/queries/hooks/favorites";
 import { useDownloads } from "@/hooks/useDownload";
 import { LectureListWithProgress, LectureWithProgress } from "@/components/lectures/LectureListWithProgress";
 import { LectureGridView } from "@/components/library/LectureGridView";
 import { SegmentedControl, SegmentOption } from "@/components/ui/SegmentedControl";
 import { useContinueListening } from "@/queries/hooks/playback";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 type ViewMode = 'list' | 'grid';
 type SortOption = 'recent' | 'az' | 'speaker';
@@ -19,14 +22,59 @@ const TAB_OPTIONS: SegmentOption[] = [
 ];
 
 export default function Library() {
+  const { isSignedIn } = useAuth();
+  const { disableGuestMode } = useGuestMode();
   const [selectedTab, setSelectedTab] = useState<TabOption>('favorites');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [showSortMenu, setShowSortMenu] = useState(false);
 
-  const { data: favorites = [], isLoading, error } = useFavorites();
+  const { data: favorites = [], isLoading, error } = useFavorites({ enabled: !!isSignedIn });
   const { downloads, isLoading: downloadsLoading, refreshDownloads } = useDownloads();
-  const { data: continueListening = [] } = useContinueListening();
+  const { data: continueListening = [] } = useContinueListening({ enabled: !!isSignedIn });
+
+  // Guest mode - show sign in prompt
+  if (!isSignedIn) {
+    return (
+      <View className="flex-1 bg-background items-center justify-center px-6">
+        <View className="bg-card rounded-2xl p-8 items-center border border-border w-full max-w-sm">
+          <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-6">
+            <Feather name="book-open" size={40} color="#a855f7" />
+          </View>
+          <Text className="text-foreground text-2xl font-bold text-center mb-3">
+            Sign In Required
+          </Text>
+          <Text className="text-muted-foreground text-center mb-8 leading-6">
+            Create a free account to save favorites, track your downloads, and sync your listening history across devices.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              disableGuestMode();
+              router.push('/sign-in');
+            }}
+            className="bg-primary w-full py-4 rounded-xl items-center mb-3"
+            activeOpacity={0.8}
+          >
+            <Text className="text-primary-foreground font-semibold text-base">
+              Sign In
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              disableGuestMode();
+              router.push('/sign-up');
+            }}
+            className="w-full py-4 rounded-xl items-center border border-border"
+            activeOpacity={0.8}
+          >
+            <Text className="text-foreground font-medium text-base">
+              Create Account
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   // Refresh downloads when switching to Downloaded tab
   React.useEffect(() => {

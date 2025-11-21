@@ -29,6 +29,8 @@ import {
   useRemoveFavorite,
 } from "@/queries/hooks/favorites";
 import { formatTime } from "@/utils/timeFormat";
+import { useGuestMode } from "@/hooks/useGuestMode";
+import { ACCOUNT_REQUIRED_FEATURES } from "@/store/guestMode";
 
 const PLAYBACK_SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 const SWIPE_THRESHOLD = 100;
@@ -59,6 +61,9 @@ export default function PlayerScreen() {
   const [showSleepTimerModal, setShowSleepTimerModal] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [isReady, setIsReady] = useState(false);
+
+  // Guest mode
+  const { requireAuth } = useGuestMode();
 
   // Swipe down gesture
   const translateY = useSharedValue(0);
@@ -100,6 +105,10 @@ export default function PlayerScreen() {
 
   const toggleFavorite = () => {
     if (!lecture) return;
+
+    // Check if user is authenticated for favorites
+    if (!requireAuth(ACCOUNT_REQUIRED_FEATURES.FAVORITES)) return;
+
     if (isFavorited) {
       removeFavoriteMutation.mutate(lecture.id.toString());
     } else {

@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useAuth } from '@clerk/clerk-expo';
 import { useWeeklyProgress } from '@/queries/hooks/stats';
 import { useCurrentUser } from '@/queries/hooks/user';
 
 export const WeekDayCircles = () => {
+  const { isSignedIn } = useAuth();
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  // Fetch real data
-  const { data: weeklyProgress, isLoading: isLoadingWeekly } = useWeeklyProgress();
+  // Only fetch data when signed in
+  const { data: weeklyProgress, isLoading: isLoadingWeekly } = useWeeklyProgress({
+    enabled: !!isSignedIn
+  });
   const { data: user, isLoading: isLoadingUser } = useCurrentUser();
+
+  // Don't show for guests
+  if (!isSignedIn) {
+    return null;
+  }
 
   const currentDay = new Date().getDay();
   const currentDayIndex = currentDay === 0 ? 6 : currentDay - 1; // Convert Sunday (0) to index 6, others shift by -1

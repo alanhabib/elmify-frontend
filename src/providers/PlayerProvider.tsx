@@ -19,6 +19,7 @@ import {
 } from "@/queries/hooks/playback";
 import { useTrackListening } from "@/queries/hooks/stats";
 import { useTrackPlayer } from "@/hooks/useTrackPlayer";
+import { useAuth } from "@clerk/clerk-expo";
 
 type RepeatMode = "off" | "one" | "all";
 
@@ -50,6 +51,7 @@ type PlayerContextType = {
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export default function PlayerProvider({ children }: PropsWithChildren) {
+  const { isSignedIn } = useAuth();
   const [lecture, setLecture] = useState<UILecture | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,9 +80,9 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     isCleaningUp.current = false; // Reset cleanup flag on mount
   }, []);
 
-  // Fetch saved playback position
+  // Fetch saved playback position (only when signed in)
   const { data: savedPosition, isLoading: isPositionLoading } =
-    usePlaybackPosition(lecture?.id?.toString());
+    usePlaybackPosition(lecture?.id?.toString(), { enabled: !!lecture?.id && !!isSignedIn });
   const updatePositionMutation = useUpdatePosition();
   const trackListeningMutation = useTrackListening();
 
@@ -255,8 +257,10 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     }
   }, [savedPosition, lecture?.id, isPositionLoading, trackLoadedId]);
 
-  // Save position helper
+  // Save position helper (only when signed in)
   const savePosition = (positionMs: number) => {
+    // Skip saving for guest users
+    if (!isSignedIn) return;
     if (!lecture || positionMs === lastSavedPosition.current) return;
 
     if (
@@ -309,9 +313,9 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     };
   }, [lecture?.id, trackPlayer.isPlaying]);
 
-  // Track listening stats every 30 seconds
+  // Track listening stats every 30 seconds (only when signed in)
   useEffect(() => {
-    if (!lecture || !trackPlayer.isPlaying || isCleaningUp.current) {
+    if (!lecture || !trackPlayer.isPlaying || isCleaningUp.current || !isSignedIn) {
       if (statsTrackingInterval.current) {
         clearInterval(statsTrackingInterval.current);
         statsTrackingInterval.current = null;
@@ -320,7 +324,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     }
 
     statsTrackingInterval.current = setInterval(() => {
-      if (!isCleaningUp.current) {
+      if (!isCleaningUp.current && isSignedIn) {
         trackListeningMutation.mutate({
           lectureId: lecture.id,
           playTimeSeconds: 30,

@@ -2,11 +2,12 @@ import { useSignIn } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { useColorScheme } from "nativewind";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
+  const { enableGuestMode } = useGuestMode();
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -92,6 +93,16 @@ export default function Page() {
             <Text className="text-primary font-semibold ml-1">Sign up</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Guest Mode Button */}
+        <TouchableOpacity
+          className="mt-8 py-3"
+          onPress={enableGuestMode}
+        >
+          <Text className="text-muted-foreground text-center">
+            Continue as Guest
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
