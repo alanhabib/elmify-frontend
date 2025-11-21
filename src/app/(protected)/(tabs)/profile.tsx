@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "@clerk/clerk-expo";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 // Hooks
 import { useCurrentUser, useUpdatePreferences } from "@/queries/hooks/user";
@@ -149,7 +150,12 @@ export default function Profile() {
   const isGoalMet = () =>
     todayProgress.dailyMinutes >= dailyGoals.dailyGoalMinutes;
 
-  const isLoading = isLoadingUser || isLoadingDaily || isLoadingStreaks;
+  // Calculate loading progress
+  const loadingStates = [!isLoadingUser, !isLoadingDaily, !isLoadingStreaks];
+  const completedCount = loadingStates.filter(Boolean).length;
+  const loadingProgress = Math.round((completedCount / loadingStates.length) * 100);
+
+  const isLoading = loadingProgress < 100;
   const hasError = userError || dailyError || streaksError;
 
   const handleRetry = () => {
@@ -159,11 +165,7 @@ export default function Profile() {
   };
 
   if (isLoading) {
-    return (
-      <ScrollView className="flex-1 bg-background" showsVerticalScrollIndicator={false}>
-        <ProfileSkeleton />
-      </ScrollView>
-    );
+    return <LoadingScreen progress={loadingProgress} />;
   }
 
   if (hasError) {

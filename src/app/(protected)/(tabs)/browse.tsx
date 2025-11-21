@@ -5,7 +5,7 @@
  */
 
 import { useState, useMemo, useCallback } from "react";
-import { Text, ActivityIndicator, View, ScrollView } from "react-native";
+import { Text, View, ScrollView } from "react-native";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useRouter } from "expo-router";
 import { useSpeakers } from "@/queries/hooks/speakers";
@@ -13,6 +13,7 @@ import { useCollections } from "@/queries/hooks/collections";
 import { SpeakersSection } from "@/components/speakers/SpeakersSection";
 import { CollectionsSection } from "@/components/collections/CollectionsSection";
 import { usePremiumAccess } from "@/hooks/usePremiumAccess";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 export default function Browse() {
   const router = useRouter();
@@ -48,16 +49,16 @@ export default function Browse() {
     router.push(`/collection/${collection.id}`);
   }, [router]);
 
-  const isLoading = isLoadingSpeakers || isLoadingCollections;
+  // Calculate loading progress
+  const loadingStates = [!isLoadingSpeakers, !isLoadingCollections];
+  const completedCount = loadingStates.filter(Boolean).length;
+  const loadingProgress = Math.round((completedCount / loadingStates.length) * 100);
+
+  const isLoading = loadingProgress < 100;
   const hasError = speakersError || collectionsError;
 
   if (isLoading) {
-    return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#a855f7" />
-        <Text className="text-foreground mt-4">Loading content...</Text>
-      </View>
-    );
+    return <LoadingScreen progress={loadingProgress} />;
   }
 
   if (hasError) {

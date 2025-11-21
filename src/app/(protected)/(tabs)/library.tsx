@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Text, View, ActivityIndicator, ScrollView, Pressable, TouchableOpacity } from "react-native";
+import { Text, View, ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@clerk/clerk-expo";
@@ -10,6 +10,7 @@ import { LectureGridView } from "@/components/library/LectureGridView";
 import { SegmentedControl, SegmentOption } from "@/components/ui/SegmentedControl";
 import { useContinueListening } from "@/queries/hooks/playback";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 type ViewMode = 'list' | 'grid';
 type SortOption = 'recent' | 'az' | 'speaker';
@@ -168,13 +169,13 @@ export default function Library() {
     }
   }, [selectedTab, sortedFavorites, sortedDownloads]);
 
-  if (isLoading || downloadsLoading) {
-    return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text className="text-muted-foreground mt-4">Loading library...</Text>
-      </View>
-    );
+  // Calculate loading progress
+  const loadingStates = [!isLoading, !downloadsLoading];
+  const completedCount = loadingStates.filter(Boolean).length;
+  const loadingProgress = Math.round((completedCount / loadingStates.length) * 100);
+
+  if (loadingProgress < 100) {
+    return <LoadingScreen progress={loadingProgress} />;
   }
 
   if (error) {

@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { ScrollView, View, Text, ActivityIndicator } from "react-native";
+import { ScrollView, View, Text } from "react-native";
 import { useAuth } from "@clerk/clerk-expo";
 import { WeekDayCircles } from "@/components/dashboard/WeekDayCircles";
 import { WeeklyReminderCard } from "@/components/dashboard/WeeklyReminderCard";
@@ -17,20 +17,52 @@ import { SpeakersSection } from "@/components/speakers/SpeakersSection";
 import { DeveloperTestingSection } from "@/components/dashboard/DeveloperTestingSection";
 import { HeroCarousel } from "@/components/hero";
 import { useSpeakers } from "@/queries/hooks/speakers";
+import { useTrendingLectures } from "@/queries/hooks/lectures";
+import { useCollections } from "@/queries/hooks/collections";
+import { useWeeklyProgress } from "@/queries/hooks/stats";
+import { useRecentLectures } from "@/queries/hooks/playback";
+import { useCurrentUser } from "@/queries/hooks/user";
 import { useRouter } from "expo-router";
 import { usePremiumAccess } from "@/hooks/usePremiumAccess";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 export default function Dashboard() {
   const router = useRouter();
   const { isSignedIn } = useAuth();
   const { filterAccessible } = usePremiumAccess();
 
-  // Fetch speakers using centralized hook
+  // Fetch all data at top level for unified loading
   const {
     data: speakers = [],
     isLoading: isLoadingSpeakers,
     error: speakersError,
   } = useSpeakers();
+
+  const {
+    data: trendingLectures = [],
+    isLoading: isLoadingTrending,
+    error: trendingError,
+  } = useTrendingLectures({ limit: 9 });
+
+  const {
+    data: collections = [],
+    isLoading: isLoadingCollections,
+    error: collectionsError,
+  } = useCollections({ params: { page: 0, size: 50 } });
+
+  // Only fetch user-specific data when signed in
+  const { isLoading: isLoadingWeekly } = useWeeklyProgress({
+    enabled: !!isSignedIn
+  });
+
+  const { isLoading: isLoadingRecent } = useRecentLectures({
+    limit: 10,
+    enabled: !!isSignedIn
+  });
+
+  const { isLoading: isLoadingUser } = useCurrentUser({
+    enabled: !!isSignedIn
+  });
 
   // Filter speakers based on premium access
   const accessibleSpeakers = useMemo(
@@ -46,26 +78,33 @@ export default function Dashboard() {
     [router]
   );
 
-  const isLoading = isLoadingSpeakers;
-  const hasError = !!speakersError;
+  // Calculate loading progress
+  const loadingStates = [
+    !isLoadingSpeakers,
+    !isLoadingTrending,
+    !isLoadingCollections,
+    ...(isSignedIn ? [!isLoadingWeekly, !isLoadingRecent, !isLoadingUser] : []),
+  ];
+  const completedCount = loadingStates.filter(Boolean).length;
+  const totalCount = loadingStates.length;
+  const loadingProgress = Math.round((completedCount / totalCount) * 100);
+
+  const isLoading = loadingProgress < 100;
+  const hasError = speakersError || trendingError || collectionsError;
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-background">
-        <ActivityIndicator size="large" className="text-primary" />
-        <Text className="mt-4 text-muted-foreground">Loading dashboard...</Text>
-      </View>
-    );
+    return <LoadingScreen progress={loadingProgress} />;
   }
 
   if (hasError) {
+    const errorMessage = speakersError?.message || trendingError?.message || collectionsError?.message || "Unknown error";
     return (
       <View className="flex-1 justify-center items-center bg-background px-4">
         <Text className="text-xl font-bold text-destructive mb-2">
-          Error Loading Speakers
+          Error Loading Content
         </Text>
         <Text className="text-muted-foreground text-center">
-          {speakersError?.message || "Unknown error"}
+          {errorMessage}
         </Text>
       </View>
     );

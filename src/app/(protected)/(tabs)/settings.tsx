@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
 import { Stack, router } from "expo-router";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@clerk/clerk-expo";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 // Hooks
 import { useAuthManager } from "@/hooks/auth/useAuthManager";
@@ -131,11 +132,7 @@ export default function Settings() {
   };
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-background">
-        <Text className="text-foreground">Loading...</Text>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
