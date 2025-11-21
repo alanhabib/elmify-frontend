@@ -66,13 +66,18 @@ export class TrackPlayerService {
           Capability.SkipToPrevious,
           Capability.SeekTo,
           Capability.Stop,
+          Capability.JumpForward,
+          Capability.JumpBackward,
         ],
         compactCapabilities: [
           Capability.Play,
           Capability.Pause,
-          Capability.SkipToNext,
-          Capability.SkipToPrevious,
+          Capability.JumpForward,
+          Capability.JumpBackward,
         ],
+        // Jump intervals in seconds
+        forwardJumpInterval: 15,
+        backwardJumpInterval: 15,
         // Update progress every 2 seconds to reduce overhead
         progressUpdateEventInterval: 2,
       });

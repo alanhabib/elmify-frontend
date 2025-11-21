@@ -54,6 +54,27 @@ export async function PlaybackService() {
     }
   });
 
+  TrackPlayerService.addEventListener(Event.RemoteJumpForward, async (data: { interval: number }) => {
+    try {
+      const position = await TrackPlayerService.getPosition();
+      const duration = await TrackPlayerService.getDuration();
+      const newPosition = Math.min(position + data.interval, duration);
+      await TrackPlayerService.seekTo(newPosition);
+    } catch (error) {
+      console.error('RemoteJumpForward error:', error);
+    }
+  });
+
+  TrackPlayerService.addEventListener(Event.RemoteJumpBackward, async (data: { interval: number }) => {
+    try {
+      const position = await TrackPlayerService.getPosition();
+      const newPosition = Math.max(position - data.interval, 0);
+      await TrackPlayerService.seekTo(newPosition);
+    } catch (error) {
+      console.error('RemoteJumpBackward error:', error);
+    }
+  });
+
   TrackPlayerService.addEventListener(Event.RemoteStop, async () => {
     try {
       await TrackPlayerService.stop();
