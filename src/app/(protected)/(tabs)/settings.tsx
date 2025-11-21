@@ -101,7 +101,7 @@ export default function Settings() {
 
   const handleDeleteAccount = async (confirmEmail: string) => {
     try {
-      // Delete from backend
+      // Delete from backend (this also deletes from Clerk)
       await deleteAccountMutation.mutateAsync(confirmEmail);
 
       // Clear local downloads
@@ -110,14 +110,20 @@ export default function Settings() {
       // Close modal
       setIsDeleteModalVisible(false);
 
-      // Sign out from Clerk
+      // Sign out locally to clear cached session
       await signOut();
 
-      Alert.alert(
-        "Account Deleted",
-        "Your account has been permanently deleted.",
-        [{ text: "OK" }]
-      );
+      // Navigate to sign-in and show confirmation
+      router.replace('/sign-in');
+
+      // Small delay to ensure navigation completes before alert
+      setTimeout(() => {
+        Alert.alert(
+          "Account Deleted",
+          "Your account has been permanently deleted.",
+          [{ text: "OK" }]
+        );
+      }, 100);
     } catch (error) {
       // Error will be shown inline in the modal via the error prop
     }
