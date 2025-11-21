@@ -38,8 +38,13 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectur
   const router = useRouter();
   const { lecture: currentLecture, setLecture, addToQueue, play, pause, isPlaying, currentTime, duration } = usePlayer();
 
-  // Fetch playback position for this lecture
-  const { data: playbackPosition } = usePlaybackPosition(lecture.id.toString());
+  // Only fetch playback position if progress is not already provided
+  // This prevents API spam for Downloads/Favorites which already have progress data
+  const shouldFetchPosition = lecture.progress === undefined || lecture.progress === null;
+  const { data: playbackPosition } = usePlaybackPosition(
+    lecture.id.toString(),
+    { enabled: shouldFetchPosition }
+  );
 
   // Check if this lecture is currently playing
   const isCurrentlyPlaying = currentLecture?.id === lecture.id.toString() && isPlaying;
