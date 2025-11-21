@@ -291,7 +291,7 @@ export default function PlayerScreen() {
                 <Ionicons
                   name={isPlaying ? "pause" : "play"}
                   size={40}
-                  color="black"
+                  color="white"
                   style={isPlaying ? {} : { marginLeft: 4 }}
                 />
               </Pressable>
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     height: 80,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#a855f7",
     borderRadius: 40,
   },
 });
