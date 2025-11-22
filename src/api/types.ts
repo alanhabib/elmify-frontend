@@ -55,6 +55,46 @@ export interface PaginatedResponse<T> {
 }
 
 // ============================================================================
+// CATEGORY TYPES
+// ============================================================================
+
+/**
+ * Category response (list view)
+ * Lightweight representation for category lists
+ */
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  iconName: string;
+  color: string;
+  parentId?: number;
+  lectureCount: number;
+  collectionCount: number;
+  isFeatured: boolean;
+}
+
+/**
+ * Category detail response (detail view)
+ * Includes subcategories and featured collections
+ */
+export interface CategoryDetailResponse extends CategoryResponse {
+  subcategories: CategoryResponse[];
+  featuredCollections: CollectionResponse[];
+}
+
+/**
+ * Category summary for embedding in lecture/collection responses
+ */
+export interface CategorySummaryResponse {
+  id: number;
+  name: string;
+  slug: string;
+  isPrimary: boolean;
+}
+
+// ============================================================================
 // SPEAKER TYPES
 // ============================================================================
 

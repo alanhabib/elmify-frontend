@@ -37,6 +37,61 @@ import type { PaginationParams } from '@/api/types';
  */
 export const queryKeys = {
   // ==========================================================================
+  // CATEGORIES
+  // ==========================================================================
+
+  categories: {
+    /**
+     * Root key for all category queries
+     * Invalidating this invalidates ALL category data
+     */
+    all: ['categories'] as const,
+
+    /**
+     * All category lists
+     */
+    lists: () => [...queryKeys.categories.all, 'list'] as const,
+
+    /**
+     * All top-level categories
+     */
+    list: () => [...queryKeys.categories.lists(), 'all'] as const,
+
+    /**
+     * Featured categories
+     */
+    featured: () => [...queryKeys.categories.lists(), 'featured'] as const,
+
+    /**
+     * All category details
+     */
+    details: () => [...queryKeys.categories.all, 'detail'] as const,
+
+    /**
+     * Specific category detail by slug
+     * @example
+     * queryKeys.categories.detail('quran')
+     */
+    detail: (slug: string) => [...queryKeys.categories.details(), slug] as const,
+
+    /**
+     * Subcategories of a category
+     * @example
+     * queryKeys.categories.subcategories('quran')
+     */
+    subcategories: (slug: string) =>
+      [...queryKeys.categories.detail(slug), 'subcategories'] as const,
+
+    /**
+     * Lectures in a category
+     * @example
+     * queryKeys.categories.lectures('quran')
+     */
+    lectures: (slug: string, params?: PaginationParams) =>
+      [...queryKeys.categories.detail(slug), 'lectures', params || {}] as const,
+  },
+
+  // ==========================================================================
   // SPEAKERS
   // ==========================================================================
 

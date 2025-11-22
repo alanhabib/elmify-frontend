@@ -10,10 +10,13 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { useRouter } from "expo-router";
 import { useSpeakers } from "@/queries/hooks/speakers";
 import { useCollections } from "@/queries/hooks/collections";
+import { useCategories } from "@/queries/hooks/categories";
 import { SpeakersSection } from "@/components/speakers/SpeakersSection";
 import { CollectionsSection } from "@/components/collections/CollectionsSection";
+import { CategoryGrid } from "@/components/categories";
 import { usePremiumAccess } from "@/hooks/usePremiumAccess";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import type { CategoryResponse } from "@/api/types";
 
 export default function Browse() {
   const router = useRouter();
@@ -34,6 +37,13 @@ export default function Browse() {
     error: collectionsError,
   } = useCollections();
 
+  // Fetch categories
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategories,
+    error: categoriesError,
+  } = useCategories();
+
   // Filter speakers based on premium access
   const accessibleSpeakers = useMemo(
     () => filterAccessible(speakers),
@@ -49,13 +59,17 @@ export default function Browse() {
     router.push(`/collection/${collection.id}`);
   }, [router]);
 
+  const handleCategoryPress = useCallback((category: CategoryResponse) => {
+    router.push(`/category/${category.slug}`);
+  }, [router]);
+
   // Calculate loading progress
-  const loadingStates = [!isLoadingSpeakers, !isLoadingCollections];
+  const loadingStates = [!isLoadingSpeakers, !isLoadingCollections, !isLoadingCategories];
   const completedCount = loadingStates.filter(Boolean).length;
   const loadingProgress = Math.round((completedCount / loadingStates.length) * 100);
 
   const isLoading = loadingProgress < 100;
-  const hasError = speakersError || collectionsError;
+  const hasError = speakersError || collectionsError || categoriesError;
 
   if (isLoading) {
     return <LoadingScreen progress={loadingProgress} />;
@@ -72,6 +86,8 @@ export default function Browse() {
             ? speakersError.message
             : collectionsError instanceof Error
             ? collectionsError.message
+            : categoriesError instanceof Error
+            ? categoriesError.message
             : "Unknown error"}
         </Text>
       </View>
@@ -91,6 +107,17 @@ export default function Browse() {
           placeholder="Search speakers and collections..."
         />
       </View>
+
+      {/* Categories Section */}
+      {categories.length > 0 && (
+        <View className="mb-6 px-4">
+          <CategoryGrid
+            categories={categories}
+            onCategoryPress={handleCategoryPress}
+            title="Categories"
+          />
+        </View>
+      )}
 
       {/* Speakers Section */}
       <SpeakersSection
