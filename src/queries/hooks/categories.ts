@@ -290,6 +290,9 @@ export function usePrefetchCategory() {
       queryKey: queryKeys.categories.detail(slug),
       queryFn: async () => {
         const response = await categoryAPI.getBySlug(slug);
+        if (response.error || !response.success || !response.data) {
+          throw new Error(response.error || "Failed to prefetch category");
+        }
         return response.data;
       },
       staleTime: CACHE_TIMES.categories.staleTime,
