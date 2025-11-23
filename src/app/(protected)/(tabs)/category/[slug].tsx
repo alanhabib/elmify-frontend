@@ -1,6 +1,6 @@
 /**
  * Category Screen
- * Shows category details with subcategories and lectures
+ * Shows collections in a category
  */
 
 import React from "react";
@@ -10,14 +10,14 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useCategory, useCategoryLectures } from "@/queries/hooks/categories";
-import { CategoryCard } from "@/components/categories";
-import type { LectureResponse, CategoryResponse } from "@/api/types";
+import { useCategory, useCategoryCollections } from "@/queries/hooks/categories";
+import type { CollectionResponse } from "@/api/types";
 
 export default function CategoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -30,25 +30,21 @@ export default function CategoryScreen() {
     isError: categoryError,
   } = useCategory(slug);
 
-  // Fetch lectures with infinite scroll
+  // Fetch collections with infinite scroll
   const {
-    data: lecturesData,
-    isLoading: lecturesLoading,
+    data: collectionsData,
+    isLoading: collectionsLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useCategoryLectures(slug);
+  } = useCategoryCollections(slug);
 
-  const lectures = lecturesData?.pages.flatMap((page) => page.data) || [];
-  const isLoading = categoryLoading || lecturesLoading;
+  const collections = collectionsData?.pages.flatMap((page) => page.data) || [];
+  const isLoading = categoryLoading || collectionsLoading;
 
   // Navigation handlers
-  const handleLecturePress = (lecture: LectureResponse) => {
-    router.push(`/lecture/${lecture.id}`);
-  };
-
-  const handleSubcategoryPress = (subcategory: CategoryResponse) => {
-    router.push(`/category/${subcategory.slug}`);
+  const handleCollectionPress = (collection: CollectionResponse) => {
+    router.push(`/collection/${collection.id}`);
   };
 
   const handleLoadMore = () => {
@@ -90,7 +86,7 @@ export default function CategoryScreen() {
   }
 
   const renderHeader = () => (
-    <View className="mb-6">
+    <View className="mb-4">
       {/* Back Button and Title */}
       <View className="flex-row items-center mb-4">
         <Pressable onPress={() => router.back()} className="p-2 -ml-2">
@@ -108,28 +104,50 @@ export default function CategoryScreen() {
         </Text>
       )}
 
-      {/* Subcategories */}
-      {category.subcategories && category.subcategories.length > 0 && (
-        <View className="mb-6">
-          <Text className="text-lg font-semibold text-foreground mb-3">
-            Subcategories
-          </Text>
-          {category.subcategories.map((subcategory) => (
-            <CategoryCard
-              key={subcategory.id}
-              category={subcategory}
-              onPress={handleSubcategoryPress}
-              variant="compact"
-            />
-          ))}
-        </View>
-      )}
-
-      {/* Lectures Header */}
-      <Text className="text-lg font-semibold text-foreground mb-2">
-        Lectures ({category.lectureCount})
+      {/* Collections count */}
+      <Text className="text-sm text-muted-foreground">
+        {category.collectionCount} {category.collectionCount === 1 ? 'collection' : 'collections'}
       </Text>
     </View>
+  );
+
+  const renderCollection = ({ item }: { item: CollectionResponse }) => (
+    <Pressable
+      onPress={() => handleCollectionPress(item)}
+      className="flex-row items-center py-3 border-b border-border"
+    >
+      {/* Collection Cover */}
+      <View className="w-16 h-16 bg-muted rounded-lg mr-3 overflow-hidden">
+        {item.coverImageUrl ? (
+          <Image
+            source={{ uri: item.coverImageUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="w-full h-full items-center justify-center">
+            <Ionicons name="albums-outline" size={28} color="#a855f7" />
+          </View>
+        )}
+      </View>
+
+      {/* Collection Info */}
+      <View className="flex-1">
+        <Text className="text-foreground font-medium" numberOfLines={2}>
+          {item.title}
+        </Text>
+        {item.speakerName && (
+          <Text className="text-muted-foreground text-sm" numberOfLines={1}>
+            {item.speakerName}
+          </Text>
+        )}
+        <Text className="text-muted-foreground text-xs">
+          {item.lectureCount} {item.lectureCount === 1 ? 'lecture' : 'lectures'}
+        </Text>
+      </View>
+
+      <Ionicons name="chevron-forward" size={20} color="#6b7280" />
+    </Pressable>
   );
 
   const renderFooter = () => {
@@ -144,12 +162,12 @@ export default function CategoryScreen() {
   };
 
   const renderEmpty = () => {
-    if (lecturesLoading) return null;
+    if (collectionsLoading) return null;
     return (
       <View className="py-8 items-center">
-        <Ionicons name="musical-notes-outline" size={48} color="#6b7280" />
+        <Ionicons name="albums-outline" size={48} color="#6b7280" />
         <Text className="text-muted-foreground mt-2">
-          No lectures in this category yet
+          No collections in this category yet
         </Text>
       </View>
     );
@@ -158,29 +176,9 @@ export default function CategoryScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <FlatList
-        data={lectures}
+        data={collections}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => handleLecturePress(item)}
-            className="flex-row items-center py-3 border-b border-border"
-          >
-            <View className="w-12 h-12 bg-muted rounded-lg items-center justify-center mr-3">
-              <Ionicons name="musical-note" size={24} color="#a855f7" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-foreground font-medium" numberOfLines={2}>
-                {item.title}
-              </Text>
-              {item.speakerName && (
-                <Text className="text-muted-foreground text-sm" numberOfLines={1}>
-                  {item.speakerName}
-                </Text>
-              )}
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#6b7280" />
-          </Pressable>
-        )}
+        renderItem={renderCollection}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}

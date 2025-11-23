@@ -17,6 +17,7 @@ import type {
   APIResponse,
   CategoryResponse,
   CategoryDetailResponse,
+  CollectionResponse,
   LectureResponse,
   PaginationParams,
   PaginatedResponse,
@@ -83,6 +84,35 @@ export async function getSubcategories(
 }
 
 /**
+ * Get collections by category (paginated)
+ *
+ * @param slug - Category slug
+ * @param params - Pagination parameters
+ * @returns Paginated collections in the category
+ *
+ * @example
+ * const response = await categoryAPI.getCollections('quran', { page: 0, pageSize: 20 });
+ */
+export async function getCollections(
+  slug: string,
+  params?: PaginationParams
+): Promise<APIResponse<PaginatedResponse<CollectionResponse>>> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.page !== undefined) {
+    searchParams.append("page", params.page.toString());
+  }
+  if (params?.pageSize !== undefined) {
+    searchParams.append("size", params.pageSize.toString());
+  }
+
+  const query = searchParams.toString();
+  const endpoint = `/categories/${slug}/collections${query ? `?${query}` : ""}`;
+
+  return apiClient.get<PaginatedResponse<CollectionResponse>>(endpoint);
+}
+
+/**
  * Get lectures by category (paginated)
  *
  * @param slug - Category slug
@@ -122,5 +152,6 @@ export const categoryAPI = {
   getFeatured,
   getBySlug,
   getSubcategories,
+  getCollections,
   getLectures,
 };

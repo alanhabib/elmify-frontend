@@ -83,6 +83,14 @@ export const queryKeys = {
       [...queryKeys.categories.detail(slug), 'subcategories'] as const,
 
     /**
+     * Collections in a category
+     * @example
+     * queryKeys.categories.collections('quran')
+     */
+    collections: (slug: string, params?: PaginationParams) =>
+      [...queryKeys.categories.detail(slug), 'collections', params || {}] as const,
+
+    /**
      * Lectures in a category
      * @example
      * queryKeys.categories.lectures('quran')

@@ -24,6 +24,7 @@ import { CACHE_TIMES } from "@/queries/client";
 import type {
   CategoryResponse,
   CategoryDetailResponse,
+  CollectionResponse,
   LectureResponse,
   PaginationParams,
   PaginatedResponse,
@@ -38,6 +39,14 @@ import type {
  */
 interface UseCategoryOptions {
   enabled?: boolean;
+}
+
+/**
+ * Options for category collections query
+ */
+interface UseCategoryCollectionsOptions {
+  enabled?: boolean;
+  pageSize?: number;
 }
 
 /**
@@ -175,6 +184,83 @@ export function useCategory(
     enabled,
     staleTime: CACHE_TIMES.categories.staleTime,
     gcTime: CACHE_TIMES.categories.gcTime,
+    retry: 2,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Get paginated collections for a category
+ *
+ * Uses infinite query for scroll-to-load pagination
+ *
+ * @example
+ * ```tsx
+ * function CategoryScreen({ slug }) {
+ *   const {
+ *     data,
+ *     fetchNextPage,
+ *     hasNextPage,
+ *     isFetchingNextPage,
+ *   } = useCategoryCollections(slug);
+ *
+ *   const collections = data?.pages.flatMap(p => p.data) || [];
+ *
+ *   return (
+ *     <FlatList
+ *       data={collections}
+ *       onEndReached={() => hasNextPage && fetchNextPage()}
+ *     />
+ *   );
+ * }
+ * ```
+ */
+export function useCategoryCollections(
+  slug: string | undefined,
+  options: UseCategoryCollectionsOptions = {}
+) {
+  const { enabled = !!slug, pageSize = 20 } = options;
+
+  return useInfiniteQuery({
+    queryKey: queryKeys.categories.collections(slug!, { pageSize }),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await categoryAPI.getCollections(slug!, {
+        page: pageParam,
+        pageSize,
+      });
+
+      if (response.error || !response.success) {
+        throw new Error(response.error || "Failed to fetch collections");
+      }
+
+      return (
+        response.data || {
+          data: [],
+          pagination: {
+            currentPage: 0,
+            pageSize,
+            totalItems: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrevious: false,
+          },
+        }
+      );
+    },
+    enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasNext
+        ? lastPage.pagination.currentPage + 1
+        : undefined,
+    getPreviousPageParam: (firstPage) =>
+      firstPage.pagination.hasPrevious
+        ? firstPage.pagination.currentPage - 1
+        : undefined,
+    staleTime: CACHE_TIMES.collections.staleTime,
+    gcTime: CACHE_TIMES.collections.gcTime,
     retry: 2,
     refetchOnMount: false,
     refetchOnReconnect: true,
