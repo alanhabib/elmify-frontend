@@ -28,9 +28,13 @@ import { queryKeys } from './keys';
  * - Episodes (Lectures): 15 min stale, 30 min GC
  */
 export const CACHE_TIMES = {
+  categories: {
+    staleTime: 1000 * 60 * 60 * 2, // 2 hours (categories change very rarely)
+    gcTime: 1000 * 60 * 60 * 4, // 4 hours
+  },
   speakers: {
     staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 120, // 2 hours
+    gcTime: 1000 * 60 * 60 * 2, // 2 hours
   },
   collections: {
     staleTime: 1000 * 60 * 30, // 30 minutes
