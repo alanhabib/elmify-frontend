@@ -34,7 +34,7 @@ export const CACHE_TIMES = {
   },
   speakers: {
     staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 120, // 2 hours
+    gcTime: 1000 * 60 * 60 * 2, // 2 hours
   },
   collections: {
     staleTime: 1000 * 60 * 30, // 30 minutes
