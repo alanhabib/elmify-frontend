@@ -90,7 +90,7 @@ export async function getSubcategories(
  * @returns Paginated lectures in the category
  *
  * @example
- * const response = await categoryAPI.getLectures('quran', { page: 0, size: 20 });
+ * const response = await categoryAPI.getLectures('quran', { page: 0, pageSize: 20 });
  */
 export async function getLectures(
   slug: string,
