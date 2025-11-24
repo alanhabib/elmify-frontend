@@ -450,57 +450,67 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     TrackPlayerService.addToQueue(lectures);
   };
 
+  // Use ref to always have access to current queue (avoids stale closure)
+  const queueRef = useRef<UILecture[]>([]);
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
   const playNext = useCallback(async () => {
-    if (queue.length === 0) {
+    const currentQueue = queueRef.current;
+
+    if (currentQueue.length === 0) {
       console.log("⏭️ No queue to play next from");
       return;
     }
 
     try {
-      const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
+      const currentIndex = currentQueue.findIndex((l) => l.id === lecture?.id);
       const nextIndex = currentIndex + 1;
 
-      console.log("⏭️ playNext - currentIndex:", currentIndex, "nextIndex:", nextIndex, "queueLength:", queue.length);
+      console.log("⏭️ playNext - currentIndex:", currentIndex, "nextIndex:", nextIndex, "queueLength:", currentQueue.length);
 
-      if (nextIndex < queue.length) {
-        console.log("⏭️ Playing next lecture:", queue[nextIndex].id);
-        setLecture(queue[nextIndex]);
+      if (nextIndex < currentQueue.length) {
+        console.log("⏭️ Playing next lecture:", currentQueue[nextIndex].id);
+        setLecture(currentQueue[nextIndex]);
       } else if (repeatMode === "all") {
         console.log("🔁 Repeating queue from start");
-        setLecture(queue[0]);
+        setLecture(currentQueue[0]);
       } else {
         console.log("⏭️ End of queue reached");
       }
     } catch (error) {
       console.error("❌ Error in playNext:", error);
     }
-  }, [queue, lecture?.id, repeatMode]);
+  }, [lecture?.id, repeatMode]);
 
   const playPrevious = useCallback(async () => {
-    if (queue.length === 0) {
+    const currentQueue = queueRef.current;
+
+    if (currentQueue.length === 0) {
       console.log("⏮️ No queue to play previous from");
       return;
     }
 
     try {
-      const currentIndex = queue.findIndex((l) => l.id === lecture?.id);
+      const currentIndex = currentQueue.findIndex((l) => l.id === lecture?.id);
       const previousIndex = currentIndex - 1;
 
       console.log("⏮️ playPrevious - currentIndex:", currentIndex, "previousIndex:", previousIndex);
 
       if (previousIndex >= 0) {
-        console.log("⏮️ Playing previous lecture:", queue[previousIndex].id);
-        setLecture(queue[previousIndex]);
+        console.log("⏮️ Playing previous lecture:", currentQueue[previousIndex].id);
+        setLecture(currentQueue[previousIndex]);
       } else if (repeatMode === "all") {
         console.log("🔁 Repeating queue from end");
-        setLecture(queue[queue.length - 1]);
+        setLecture(currentQueue[currentQueue.length - 1]);
       } else {
         console.log("⏮️ Beginning of queue reached");
       }
     } catch (error) {
       console.error("❌ Error in playPrevious:", error);
     }
-  }, [queue, lecture?.id, repeatMode]);
+  }, [lecture?.id, repeatMode]);
 
   const toggleShuffle = () => {
     setShuffle(!shuffle);
