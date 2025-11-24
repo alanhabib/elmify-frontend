@@ -446,6 +446,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Queue management
   const addToQueue = (lectures: UILecture[]) => {
+    console.log("📋 addToQueue called with", lectures.length, "lectures");
     setQueue(lectures);
     TrackPlayerService.addToQueue(lectures);
   };

@@ -262,7 +262,11 @@ export default function PlayerScreen() {
 
             {/* Main playback controls */}
             <View className="flex-row justify-between items-center mt-6 px-6">
-              <Pressable onPress={playPrevious}>
+              <Pressable
+                onPress={playPrevious}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={{ padding: 8 }}
+              >
                 <Ionicons
                   name="play-skip-back-outline"
                   size={40}
@@ -326,7 +330,11 @@ export default function PlayerScreen() {
                 </View>
               </Pressable>
 
-              <Pressable onPress={playNext}>
+              <Pressable
+                onPress={playNext}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={{ padding: 8 }}
+              >
                 <Ionicons
                   name="play-skip-forward-outline"
                   size={40}
