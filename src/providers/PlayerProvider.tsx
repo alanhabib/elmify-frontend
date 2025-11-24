@@ -8,7 +8,7 @@ import {
   useCallback,
 } from "react";
 import { AppState } from "react-native";
-import { Event, State, useTrackPlayerEvents } from "react-native-track-player";
+import TrackPlayer, { Event, State, useTrackPlayerEvents } from "react-native-track-player";
 import { TrackPlayerService } from "@/services/audio/TrackPlayerService";
 import { StreamingService } from "@/services/audio/StreamingService";
 import { UILecture } from "@/types/ui";
@@ -32,7 +32,7 @@ type PlayerContextType = {
   duration: number;
   error: string | null;
   queue: UILecture[];
-  addToQueue: (lectures: UILecture[]) => void;
+  addToQueue: (lectures: UILecture[], startIndex?: number) => void;
   playNext: () => void;
   playPrevious: () => void;
   shuffle: boolean;
@@ -212,6 +212,7 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
   );
 
   // Handle lecture changes - the main effect
+  // This now only handles direct setLecture calls (not from queue changes)
   useEffect(() => {
     if (!lecture) {
       // Cancel any pending request
@@ -229,6 +230,15 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
       return;
     }
 
+    // Check if this lecture is in the queue - if so, the PlaybackActiveTrackChanged
+    // handler will take care of loading it
+    const isInQueue = queueRef.current.some(l => l.id === lecture.id);
+    if (isInQueue) {
+      // Queue-based playback - let the track change handler manage it
+      return;
+    }
+
+    // Direct lecture set (not from queue) - load single track
     // New lecture confirmed - update the refs immediately
     currentLectureId.current = lecture.id;
     hasSeekingToSavedPosition.current = null; // Reset seek guard for new lecture
@@ -444,74 +454,92 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
     };
   }, [lecture, updatePositionMutation]);
 
-  // Queue management
-  const addToQueue = (lectures: UILecture[]) => {
-    console.log("📋 addToQueue called with", lectures.length, "lectures");
-    setQueue(lectures);
-    TrackPlayerService.addToQueue(lectures);
-  };
-
-  // Use ref to always have access to current queue (avoids stale closure)
+  // Queue management - uses native TrackPlayer queue
   const queueRef = useRef<UILecture[]>([]);
-  useEffect(() => {
-    queueRef.current = queue;
-  }, [queue]);
 
-  const playNext = useCallback(async () => {
-    const currentQueue = queueRef.current;
+  const addToQueue = useCallback(async (lectures: UILecture[], startIndex: number = 0) => {
+    console.log("📋 addToQueue called with", lectures.length, "lectures, starting at index", startIndex);
 
-    if (currentQueue.length === 0) {
-      console.log("⏭️ No queue to play next from");
-      return;
+    // Store in React state for UI
+    setQueue(lectures);
+    queueRef.current = lectures;
+
+    // Reset native queue and add all tracks
+    await TrackPlayer.reset();
+
+    // Convert all lectures to tracks (with placeholder URLs - will be fetched on play)
+    const tracks = lectures.map(lecture => ({
+      id: lecture.id,
+      url: lecture.audio_url || 'placeholder', // Will be replaced when track becomes active
+      title: lecture.title,
+      artist: lecture.author || lecture.speaker,
+      artwork: lecture.thumbnail_url,
+      duration: 0,
+    }));
+
+    await TrackPlayer.add(tracks);
+    console.log("📋 Added", tracks.length, "tracks to native queue");
+
+    // Skip to the selected track and start playing
+    if (startIndex > 0 && startIndex < lectures.length) {
+      await TrackPlayer.skip(startIndex);
     }
 
+    // Set the current lecture in state
+    setLecture(lectures[startIndex]);
+  }, []);
+
+  const playNext = useCallback(async () => {
     try {
-      const currentIndex = currentQueue.findIndex((l) => l.id === lecture?.id);
-      const nextIndex = currentIndex + 1;
+      const queueLength = await TrackPlayer.getQueue();
+      const currentIndex = await TrackPlayer.getActiveTrackIndex();
 
-      console.log("⏭️ playNext - currentIndex:", currentIndex, "nextIndex:", nextIndex, "queueLength:", currentQueue.length);
+      console.log("⏭️ playNext - currentIndex:", currentIndex, "queueLength:", queueLength.length);
 
-      if (nextIndex < currentQueue.length) {
-        console.log("⏭️ Playing next lecture:", currentQueue[nextIndex].id);
-        setLecture(currentQueue[nextIndex]);
+      if (currentIndex === undefined || currentIndex === null) {
+        console.log("⏭️ No active track");
+        return;
+      }
+
+      if (currentIndex < queueLength.length - 1) {
+        console.log("⏭️ Skipping to next track");
+        await TrackPlayer.skipToNext();
       } else if (repeatMode === "all") {
         console.log("🔁 Repeating queue from start");
-        setLecture(currentQueue[0]);
+        await TrackPlayer.skip(0);
       } else {
         console.log("⏭️ End of queue reached");
       }
     } catch (error) {
       console.error("❌ Error in playNext:", error);
     }
-  }, [lecture?.id, repeatMode]);
+  }, [repeatMode]);
 
   const playPrevious = useCallback(async () => {
-    const currentQueue = queueRef.current;
-
-    if (currentQueue.length === 0) {
-      console.log("⏮️ No queue to play previous from");
-      return;
-    }
-
     try {
-      const currentIndex = currentQueue.findIndex((l) => l.id === lecture?.id);
-      const previousIndex = currentIndex - 1;
+      const currentIndex = await TrackPlayer.getActiveTrackIndex();
+      const queueLength = await TrackPlayer.getQueue();
 
-      console.log("⏮️ playPrevious - currentIndex:", currentIndex, "previousIndex:", previousIndex);
+      console.log("⏮️ playPrevious - currentIndex:", currentIndex);
 
-      if (previousIndex >= 0) {
-        console.log("⏮️ Playing previous lecture:", currentQueue[previousIndex].id);
-        setLecture(currentQueue[previousIndex]);
+      if (currentIndex === undefined || currentIndex === null) {
+        console.log("⏮️ No active track");
+        return;
+      }
+
+      if (currentIndex > 0) {
+        console.log("⏮️ Skipping to previous track");
+        await TrackPlayer.skipToPrevious();
       } else if (repeatMode === "all") {
         console.log("🔁 Repeating queue from end");
-        setLecture(currentQueue[currentQueue.length - 1]);
+        await TrackPlayer.skip(queueLength.length - 1);
       } else {
         console.log("⏮️ Beginning of queue reached");
       }
     } catch (error) {
       console.error("❌ Error in playPrevious:", error);
     }
-  }, [lecture?.id, repeatMode]);
+  }, [repeatMode]);
 
   const toggleShuffle = () => {
     setShuffle(!shuffle);
@@ -575,6 +603,93 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
       }
     }
   );
+
+  // Handle track changes from native queue (lock screen, skip buttons)
+  useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async (event) => {
+    if (event.type !== Event.PlaybackActiveTrackChanged) return;
+
+    const track = event.track;
+    if (!track) {
+      console.log("🎵 Track changed to null");
+      return;
+    }
+
+    console.log("🎵 Track changed to:", track.id, track.title);
+
+    // Find the lecture in our queue
+    const lecture = queueRef.current.find(l => l.id === track.id);
+    if (!lecture) {
+      console.log("⚠️ Track not found in queue:", track.id);
+      return;
+    }
+
+    // Update React state
+    setLecture(lecture);
+    currentLectureId.current = lecture.id;
+    hasSeekingToSavedPosition.current = null; // Reset for new track
+
+    // If URL is placeholder, fetch the real URL
+    if (track.url === 'placeholder' || !track.url) {
+      console.log("🌐 Fetching URL for track:", track.id);
+      setIsLoading(true);
+
+      try {
+        // Check for local file first
+        let audioUrl: string | null = null;
+        try {
+          const file = `${FileSystem.documentDirectory}${lecture.id}.mp3`;
+          const fileInfo = await FileSystem.getInfoAsync(file, { size: false });
+          if (fileInfo.exists) {
+            audioUrl = file;
+            console.log("✅ Using local file:", file);
+          }
+        } catch {
+          // No local file
+        }
+
+        // Fetch streaming URL if no local file
+        if (!audioUrl) {
+          audioUrl = await StreamingService.getStreamingUrl(lecture);
+          console.log("✅ Got streaming URL for:", track.id);
+        }
+
+        // Update the track with real URL
+        const trackIndex = await TrackPlayer.getActiveTrackIndex();
+        if (trackIndex !== undefined && trackIndex !== null) {
+          await TrackPlayer.updateMetadataForTrack(trackIndex, {
+            url: audioUrl,
+          });
+
+          // Need to load the track with the new URL
+          // Remove and re-add at same position
+          const queue = await TrackPlayer.getQueue();
+          const updatedTrack = {
+            ...queue[trackIndex],
+            url: audioUrl,
+          };
+
+          await TrackPlayer.remove(trackIndex);
+          await TrackPlayer.add(updatedTrack, trackIndex);
+          await TrackPlayer.skip(trackIndex);
+          await TrackPlayer.play();
+
+          console.log("✅ Track URL updated and playing");
+        }
+
+        setTrackLoadedId(lecture.id);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("❌ Failed to fetch URL for track:", error);
+        setError(error instanceof Error ? error.message : "Failed to load audio");
+        setIsLoading(false);
+      }
+    } else {
+      // URL already exists, just play
+      setTrackLoadedId(lecture.id);
+      setIsLoading(false);
+      await TrackPlayer.play();
+    }
+  });
 
   // Auto-play next when current finishes
   useTrackPlayerEvents([Event.PlaybackQueueEnded], () => {

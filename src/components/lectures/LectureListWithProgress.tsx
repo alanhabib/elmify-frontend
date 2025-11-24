@@ -115,11 +115,11 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectur
         thumbnail_url: l.thumbnailUrl || collectionCoverUrl,
       }));
 
-      // Set the queue with all lectures from this collection
-      addToQueue(queueLectures);
+      // Find the index of the selected lecture
+      const startIndex = queueLectures.findIndex(l => l.id === lectureFormat.id);
 
-      // Start playing the selected lecture
-      setLecture(lectureFormat);
+      // Set the queue with all lectures and start at selected index
+      addToQueue(queueLectures, startIndex >= 0 ? startIndex : 0);
     } else {
       if (isPlaying) {
         await pause();
