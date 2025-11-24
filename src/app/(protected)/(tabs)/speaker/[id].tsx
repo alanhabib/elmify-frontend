@@ -122,7 +122,7 @@ export default function SpeakerScreen() {
           {/* Header with back button */}
           <View className="flex-row items-center px-4 py-3">
             <Pressable onPress={() => router.back()} className="p-2 -ml-2">
-              <Ionicons name="chevron-down" size={28} color="white" />
+              <Ionicons name="chevron-back" size={28} color="white" />
             </Pressable>
             <Text
               className="flex-1 text-lg font-semibold text-foreground ml-2"

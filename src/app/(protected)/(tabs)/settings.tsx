@@ -7,7 +7,11 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 
 // Hooks
 import { useAuthManager } from "@/hooks/auth/useAuthManager";
-import { useCurrentUser, useUpdatePreferences, useDeleteAccount } from "@/queries/hooks/user";
+import {
+  useCurrentUser,
+  useUpdatePreferences,
+  useDeleteAccount,
+} from "@/queries/hooks/user";
 import { useOfflineContent } from "@/hooks/useOfflineContent";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useDownloads } from "@/hooks/useDownload";
@@ -63,7 +67,7 @@ export default function Settings() {
             <TouchableOpacity
               onPress={() => {
                 disableGuestMode();
-                router.push('/sign-in');
+                router.push("/sign-in");
               }}
               className="bg-primary w-full py-4 rounded-xl items-center"
               activeOpacity={0.8}
@@ -116,7 +120,7 @@ export default function Settings() {
       setIsDeleteModalVisible(false);
 
       // Navigate to sign-in and show confirmation
-      router.replace('/sign-in');
+      router.replace("/sign-in");
 
       // Small delay to ensure navigation completes before alert
       setTimeout(() => {

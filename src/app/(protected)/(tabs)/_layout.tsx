@@ -9,7 +9,7 @@ import { Text } from "react-native";
 
 export default function TabsLayout() {
   return (
-    <Tabs>
+    <Tabs initialRouteName="index" backBehavior="history">
       <Tabs.Screen
         name="index"
         options={{
