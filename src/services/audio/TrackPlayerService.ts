@@ -5,10 +5,10 @@ import TrackPlayer, {
   RepeatMode as TPRepeatMode,
   State,
   Track,
-} from 'react-native-track-player';
-import { UILecture } from '@/types/ui';
+} from "react-native-track-player";
+import { UILecture } from "@/types/ui";
 
-export type RepeatMode = 'off' | 'one' | 'all';
+export type RepeatMode = "off" | "one" | "all";
 
 /**
  * Service to abstract react-native-track-player
@@ -26,7 +26,7 @@ export class TrackPlayerService {
       // The native player persists across JS reloads
       try {
         await TrackPlayer.reset();
-        console.log('[TrackPlayer] Reset existing playback on re-setup');
+        console.log("[TrackPlayer] Reset existing playback on re-setup");
       } catch (error) {
         // Ignore errors during reset
       }
@@ -40,20 +40,20 @@ export class TrackPlayerService {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
         // Optimized buffer configuration for fast start + smooth streaming
-        minBuffer: 10,          // Reduced from 15 - faster start
-        maxBuffer: 50,          // Maximum buffer (prevents excessive memory usage)
-        playBuffer: 1.0,        // Reduced from 2.5 - much faster initial playback
-        backBuffer: 0,          // No back buffer (reduces memory usage)
-        maxCacheSize: 50000,    // 50MB cache (balanced for streaming)
+        minBuffer: 10, // Reduced from 15 - faster start
+        maxBuffer: 50, // Maximum buffer (prevents excessive memory usage)
+        playBuffer: 1.0, // Reduced from 2.5 - much faster initial playback
+        backBuffer: 0, // No back buffer (reduces memory usage)
+        maxCacheSize: 50000, // 50MB cache (balanced for streaming)
       };
 
-      console.log('[TrackPlayer] Setting up with iOS default buffer settings');
+      console.log("[TrackPlayer] Setting up with iOS default buffer settings");
 
       await TrackPlayer.setupPlayer(bufferConfig);
 
       // Reset any existing queue from previous app session
       await TrackPlayer.reset();
-      console.log('[TrackPlayer] Cleared existing queue after setup');
+      console.log("[TrackPlayer] Cleared existing queue after setup");
 
       await TrackPlayer.updateOptions({
         android: {
@@ -101,11 +101,11 @@ export class TrackPlayerService {
       duration: 0, // Will be set when loaded
       // Use low-quality pitch algorithm for better performance
       // Prevents CPU-intensive processing that can cause audio dropouts
-      pitchAlgorithm: 'lowQuality',
+      pitchAlgorithm: "lowQuality",
       isLiveStream: false,
       // Additional headers for better R2 compatibility
       headers: {
-        'User-Agent': 'Elmify/1.0',
+        "User-Agent": "Elmify/1.0",
       },
     };
   }
@@ -113,14 +113,17 @@ export class TrackPlayerService {
   /**
    * Load and play a lecture
    */
-  static async loadAndPlay(lecture: UILecture, startPosition?: number): Promise<void> {
+  static async loadAndPlay(
+    lecture: UILecture,
+    startPosition?: number
+  ): Promise<void> {
     const track = this.lectureToTrack(lecture);
 
-    console.log('[TrackPlayer] Loading track:', {
+    console.log("[TrackPlayer] Loading track:", {
       id: track.id,
       title: track.title,
       url_length: track.url?.length || 0,
-      url_preview: track.url?.substring(0, 80) + '...',
+      url_preview: track.url?.substring(0, 80) + "...",
       has_url: !!track.url,
     });
 
@@ -130,13 +133,15 @@ export class TrackPlayerService {
 
       // Seek to saved position BEFORE playing to avoid hearing the beginning
       if (startPosition && startPosition > 0) {
-        console.log(`[TrackPlayer] Seeking to ${startPosition}s before playing`);
+        console.log(
+          `[TrackPlayer] Seeking to ${startPosition}s before playing`
+        );
         await TrackPlayer.seekTo(startPosition);
       }
 
       await TrackPlayer.play();
     } catch (error) {
-      console.error('[TrackPlayer] Error in loadAndPlay:', error);
+      console.error("[TrackPlayer] Error in loadAndPlay:", error);
       throw error; // Re-throw so caller can handle
     }
   }
@@ -162,7 +167,7 @@ export class TrackPlayerService {
     try {
       await TrackPlayer.reset();
     } catch (error) {
-      console.error('[TrackPlayer] Error in stop:', error);
+      console.error("[TrackPlayer] Error in stop:", error);
       // Don't throw - stop should be safe to call anytime
     }
   }
@@ -280,17 +285,17 @@ export class TrackPlayerService {
   static setupDiagnosticListeners(): void {
     // Monitor playback state changes
     TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
-      console.log('[TrackPlayer] State changed:', state);
+      console.log("[TrackPlayer] State changed:", state);
     });
 
     // Monitor when playback is waiting (buffering)
     TrackPlayer.addEventListener(Event.PlaybackError, (error) => {
-      console.error('[TrackPlayer] Playback error:', error);
+      console.error("[TrackPlayer] Playback error:", error);
     });
 
     // Monitor track changes
     TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, (data) => {
-      console.log('[TrackPlayer] Track changed:', data);
+      console.log("[TrackPlayer] Track changed:", data);
     });
   }
 
