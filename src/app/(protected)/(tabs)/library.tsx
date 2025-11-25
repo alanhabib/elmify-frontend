@@ -315,6 +315,7 @@ export default function Library() {
           <View className="px-4 pb-6">
             <LectureListWithProgress
               lectures={displayedLectures}
+              collectionId={selectedTab} // Use tab as collection identifier for library
               emptyMessage={getEmptyMessage()}
               emptyIcon="heart-outline"
               showHeader={false}

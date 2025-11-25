@@ -1,0 +1,81 @@
+# Elmify Backend Configuration
+# Spring Boot application.yml example for R2 and Redis configuration
+
+spring:
+  application:
+    name: elmify-api
+
+  # Redis Configuration for Playlist Manifest Caching
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 2000ms
+
+  # Jackson Configuration for Instant serialization
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Cloudflare R2 Configuration
+cloudflare:
+  r2:
+    account-id: ${R2_ACCOUNT_ID}
+    access-key-id: ${R2_ACCESS_KEY_ID}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY}
+    bucket-name: ${R2_BUCKET_NAME:elmify-audio}
+    # Optional: Custom domain for R2 (e.g., cdn.elmify.com)
+    custom-domain: ${R2_CUSTOM_DOMAIN:}
+
+# Rate Limiting Configuration
+bucket4j:
+  enabled: true
+  filters:
+    - cache-name: rate-limit-buckets
+      url: /api/v1/playlists/manifest
+      strategy: first
+      http-response-body: |
+        {
+          "error": "RATE_LIMIT_EXCEEDED",
+          "message": "Too many requests. Please try again later.",
+          "timestamp": "${timestamp}"
+        }
+      rate-limits:
+        - bandwidths:
+            - capacity: 30          # 30 requests
+              time: 1               # per 1 minute
+              unit: minutes
+              refill-speed: interval
+          cache-key: getRemoteAddr()  # Rate limit per IP address
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.elmify.api: DEBUG
+    com.elmify.api.controllers.PlaylistManifestController: DEBUG
+    com.elmify.api.services.R2SigningService: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Server Configuration
+server:
+  port: 8080
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always

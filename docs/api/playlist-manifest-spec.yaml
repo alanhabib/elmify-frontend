@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: Elmify Playlist Manifest API
+  description: |
+    Production-grade playlist manifest endpoint for bulk audio URL signing.
+
+    This endpoint allows clients to request pre-signed URLs for entire playlists
+    in a single API call, similar to Apple Podcasts and Spotify architecture.
+
+    **Key Features:**
+    - Bulk URL signing with 4-hour TTL
+    - Redis caching for performance
+    - Rate limiting protection
+    - Efficient batch processing
+
+  version: 1.0.0
+  contact:
+    name: Elmify API Support
+
+servers:
+  - url: https://api.elmify.com/v1
+    description: Production server
+  - url: https://staging-api.elmify.com/v1
+    description: Staging server
+
+tags:
+  - name: Playlists
+    description: Playlist manifest operations
+
+paths:
+  /playlists/manifest:
+    post:
+      tags:
+        - Playlists
+      summary: Get playlist manifest with pre-signed URLs
+      description: |
+        Returns a complete playlist manifest with pre-signed audio URLs for all lectures.
+
+        **Performance:**
+        - Uses Redis caching with 3.5-hour TTL
+        - Bulk signs URLs in parallel using R2 API
+        - Response typically < 500ms for cached playlists
+        - First request may take 2-5 seconds for large playlists
+
+        **Caching Strategy:**
+        - Cache key: `playlist:manifest:{collectionId}:{userId?}`
+        - TTL: 3.5 hours (shorter than URL expiry for safety margin)
+        - Automatically refreshed on cache miss
+
+      operationId: getPlaylistManifest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaylistManifestRequest'
+            examples:
+              collectionPlaylist:
+                summary: Get manifest for a collection
+                value:
+                  collectionId: "123"
+                  lectureIds: ["456", "457", "458"]
+              favoritesPlaylist:
+                summary: Get manifest for favorites
+                value:
+                  playlistType: "favorites"
+                  lectureIds: ["456", "457", "458"]
+
+      responses:
+        '200':
+          description: Playlist manifest with pre-signed URLs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistManifestResponse'
+              examples:
+                success:
+                  summary: Successful manifest response
+                  value:
+                    collectionId: "123"
+                    tracks:
+                      - lectureId: "456"
+                        audioUrl: "https://r2.elmify.com/audio/lecture-456.m4a?signature=..."
+                        expiresAt: "2025-11-24T16:00:00Z"
+                        duration: 3600
+                      - lectureId: "457"
+                        audioUrl: "https://r2.elmify.com/audio/lecture-457.m4a?signature=..."
+                        expiresAt: "2025-11-24T16:00:00Z"
+                        duration: 2400
+                    metadata:
+                      totalTracks: 2
+                      totalDuration: 6000
+                      generatedAt: "2025-11-24T12:00:00Z"
+                      expiresAt: "2025-11-24T16:00:00Z"
+                      cached: false
+
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingCollectionId:
+                  summary: Missing collection ID
+                  value:
+                    error: "BAD_REQUEST"
+                    message: "Either collectionId or playlistType must be provided"
+                    timestamp: "2025-11-24T12:00:00Z"
+                emptyLectureIds:
+                  summary: Empty lecture IDs
+                  value:
+                    error: "BAD_REQUEST"
+                    message: "lectureIds array cannot be empty"
+                    timestamp: "2025-11-24T12:00:00Z"
+
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '403':
+          description: Forbidden - User does not have access to this content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                premiumRequired:
+                  summary: Premium content requires subscription
+                  value:
+                    error: "FORBIDDEN"
+                    message: "Premium subscription required to access this content"
+                    timestamp: "2025-11-24T12:00:00Z"
+
+        '404':
+          description: Collection or lectures not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '429':
+          description: Too many requests - Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimitExceeded:
+                  summary: Rate limit exceeded
+                  value:
+                    error: "RATE_LIMIT_EXCEEDED"
+                    message: "Too many requests. Please try again in 60 seconds"
+                    retryAfter: 60
+                    timestamp: "2025-11-24T12:00:00Z"
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    PlaylistManifestRequest:
+      type: object
+      properties:
+        collectionId:
+          type: string
+          description: Collection ID for collection-based playlists
+          example: "123"
+        playlistType:
+          type: string
+          enum: [favorites, downloads, history]
+          description: Type of dynamic playlist (alternative to collectionId)
+          example: "favorites"
+        lectureIds:
+          type: array
+          items:
+            type: string
+          description: Array of lecture IDs to include in manifest (order preserved)
+          minItems: 1
+          maxItems: 1000
+          example: ["456", "457", "458"]
+      required:
+        - lectureIds
+      oneOf:
+        - required: [collectionId]
+        - required: [playlistType]
+
+    PlaylistManifestResponse:
+      type: object
+      properties:
+        collectionId:
+          type: string
+          description: Collection ID or playlist type identifier
+          example: "123"
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackManifest'
+          description: Array of track manifests with pre-signed URLs
+        metadata:
+          $ref: '#/components/schemas/PlaylistMetadata'
+      required:
+        - collectionId
+        - tracks
+        - metadata
+
+    TrackManifest:
+      type: object
+      properties:
+        lectureId:
+          type: string
+          description: Unique lecture identifier
+          example: "456"
+        audioUrl:
+          type: string
+          format: uri
+          description: Pre-signed R2 URL for audio streaming (valid for 4 hours)
+          example: "https://r2.elmify.com/audio/lecture-456.m4a?X-Amz-Algorithm=AWS4-HMAC-SHA256&..."
+        expiresAt:
+          type: string
+          format: date-time
+          description: URL expiration timestamp (4 hours from generation)
+          example: "2025-11-24T16:00:00Z"
+        duration:
+          type: integer
+          description: Audio duration in seconds
+          example: 3600
+      required:
+        - lectureId
+        - audioUrl
+        - expiresAt
+
+    PlaylistMetadata:
+      type: object
+      properties:
+        totalTracks:
+          type: integer
+          description: Total number of tracks in playlist
+          example: 25
+        totalDuration:
+          type: integer
+          description: Total duration of all tracks in seconds
+          example: 90000
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when manifest was generated
+          example: "2025-11-24T12:00:00Z"
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the URLs in this manifest expire
+          example: "2025-11-24T16:00:00Z"
+        cached:
+          type: boolean
+          description: Whether this response was served from cache
+          example: true
+      required:
+        - totalTracks
+        - generatedAt
+        - expiresAt
+        - cached
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "BAD_REQUEST"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Either collectionId or playlistType must be provided"
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: "2025-11-24T12:00:00Z"
+        retryAfter:
+          type: integer
+          description: Seconds to wait before retrying (for rate limit errors)
+          example: 60
+      required:
+        - error
+        - message
+        - timestamp
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT authentication token from Clerk
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    RateLimitExceeded:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

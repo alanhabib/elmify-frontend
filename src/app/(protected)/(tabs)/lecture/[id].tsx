@@ -35,7 +35,7 @@ export default function LectureScreen() {
   const router = useRouter();
   const {
     lecture: currentLecture,
-    setLecture,
+    addToQueue,
     play,
     pause,
     isPlaying,
@@ -76,7 +76,7 @@ export default function LectureScreen() {
     transform: [{ translateX: translateX.value }],
   }));
 
-  // Handle play/pause button - mirrors FloatingPlayer behavior
+  // Handle play/pause button - uses addToQueue for proper native queue
   const handlePlayPause = async () => {
     if (!lecture) return;
 
@@ -85,13 +85,14 @@ export default function LectureScreen() {
       title: lecture.title,
       speaker: lecture.speakerName || "",
       author: lecture.speakerName || "",
-      audio_url: "", // Will be fetched dynamically by PlayerProvider
+      audio_url: "", // Will be fetched by addToQueue
       thumbnail_url: lecture.thumbnailUrl,
     };
 
-    // If it's a different lecture, set it (which auto-plays)
+    // If it's a different lecture, add to queue (which auto-plays)
     if (currentLecture?.id !== lectureFormat.id) {
-      setLecture(lectureFormat);
+      // Single lecture queue - lock screen controls will work
+      addToQueue(`lecture-${lecture.id}`, [lectureFormat], 0);
     } else {
       // Same lecture, toggle play/pause
       if (isPlaying) {

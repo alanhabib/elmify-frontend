@@ -30,11 +30,12 @@ export interface LectureWithProgress {
 interface LectureItemProps {
   lecture: LectureWithProgress;
   allLectures: LectureWithProgress[];
+  collectionId: string;
   collectionSpeakerName?: string;
   collectionCoverUrl?: string;
 }
 
-const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectures, collectionSpeakerName, collectionCoverUrl }) => {
+const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectures, collectionId, collectionSpeakerName, collectionCoverUrl }) => {
   const router = useRouter();
   const { lecture: currentLecture, setLecture, addToQueue, play, pause, isPlaying, currentTime, duration } = usePlayer();
 
@@ -111,7 +112,7 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectur
         title: l.title,
         speaker: l.speakerName || collectionSpeakerName || '',
         author: l.speakerName || collectionSpeakerName || '',
-        audio_url: '', // Will be fetched dynamically
+        audio_url: '', // Will be pre-fetched by addToQueue
         thumbnail_url: l.thumbnailUrl || collectionCoverUrl,
       }));
 
@@ -119,7 +120,8 @@ const LectureItem: React.FC<LectureItemProps> = React.memo(({ lecture, allLectur
       const startIndex = queueLectures.findIndex(l => l.id === lectureFormat.id);
 
       // Set the queue with all lectures and start at selected index
-      addToQueue(queueLectures, startIndex >= 0 ? startIndex : 0);
+      // This will pre-fetch all URLs and load the native queue
+      addToQueue(collectionId, queueLectures, startIndex >= 0 ? startIndex : 0);
     } else {
       if (isPlaying) {
         await pause();
@@ -203,6 +205,7 @@ LectureItem.displayName = 'LectureItem';
 
 interface LectureListWithProgressProps {
   lectures: LectureWithProgress[];
+  collectionId: string; // Required for playlist URL caching
   emptyMessage?: string;
   emptyIcon?: keyof typeof Ionicons.glyphMap;
   showHeader?: boolean;
@@ -212,6 +215,7 @@ interface LectureListWithProgressProps {
 
 export const LectureListWithProgress: React.FC<LectureListWithProgressProps> = ({
   lectures,
+  collectionId,
   emptyMessage = 'No lectures available',
   emptyIcon = 'musical-notes-outline',
   showHeader = true,
@@ -255,6 +259,7 @@ export const LectureListWithProgress: React.FC<LectureListWithProgressProps> = (
           key={lecture.id}
           lecture={lecture}
           allLectures={sortedLectures}
+          collectionId={collectionId}
           collectionSpeakerName={collectionSpeakerName}
           collectionCoverUrl={collectionCoverUrl}
         />

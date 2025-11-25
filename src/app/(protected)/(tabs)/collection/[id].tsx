@@ -163,6 +163,7 @@ export default function CollectionScreen() {
             <View className="px-4 pb-6">
               <LectureListWithProgress
                 lectures={lectures}
+                collectionId={id || ''}
                 emptyMessage="No lectures in this collection"
                 emptyIcon="musical-notes-outline"
                 showHeader={true}
