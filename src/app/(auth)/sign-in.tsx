@@ -66,9 +66,16 @@ export default function Page() {
           </View>
 
           <View>
-            <Text className="text-sm font-medium text-muted-foreground mb-1">
-              Password
-            </Text>
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-sm font-medium text-muted-foreground">
+                Password
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/reset-password")}>
+                <Text className="text-sm text-primary font-medium">
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               className="w-full p-4 border border-border rounded-lg bg-card text-foreground"
               value={password}
