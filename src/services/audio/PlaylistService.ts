@@ -91,7 +91,9 @@ class PlaylistService {
     try {
       return await this.fetchFromBackend(collectionId, lectures, onProgress);
     } catch (error) {
-      console.warn('⚠️ Backend manifest failed, falling back to client-side:', error);
+      console.error('❌ Backend manifest failed, falling back to client-side sequential fetch');
+      console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+      console.error('❌ This will be SLOW and may hit rate limits!');
       // Fallback to client-side sequential fetching
       return this.fetchAndCache(collectionId, lectures, onProgress);
     }
@@ -109,10 +111,26 @@ class PlaylistService {
 
     const startTime = Date.now();
 
-    // Call backend playlist manifest endpoint
-    const response = await apiClient.post<PlaylistManifestResponse>('/playlists/manifest', {
+    const requestPayload = {
       collectionId,
       lectureIds: lectures.map(l => l.id.toString()),
+    };
+
+    console.log(`📤 Manifest request payload:`, {
+      collectionId: requestPayload.collectionId,
+      lectureCount: requestPayload.lectureIds.length,
+      firstLectureId: requestPayload.lectureIds[0],
+      lastLectureId: requestPayload.lectureIds[requestPayload.lectureIds.length - 1],
+    });
+
+    // Call backend playlist manifest endpoint
+    const response = await apiClient.post<PlaylistManifestResponse>('/playlists/manifest', requestPayload);
+
+    console.log(`📥 Manifest response:`, {
+      success: response.success,
+      status: response.status,
+      hasData: !!response.data,
+      error: response.error,
     });
 
     if (!response.success || !response.data) {
