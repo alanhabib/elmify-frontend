@@ -58,6 +58,8 @@ export class TrackPlayerService {
       await TrackPlayer.updateOptions({
         android: {
           appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
+          // Pause playback when audio focus is lost (phone calls, other audio)
+          alwaysPauseOnInterruption: true,
         },
         capabilities: [
           Capability.Play,
