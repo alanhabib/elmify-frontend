@@ -8,28 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		24F24EE6459F8B29148B9A93 /* libPods-Elmify.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5134073580FA8E41AFED19C9 /* libPods-Elmify.a */; };
-		361AAB5089B14E8A9260A552 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE783A5A358453740B5AA941 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		55D4B0A29A3B45BE95AE951B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C40392DB6A234608AC806C7F /* PrivacyInfo.xcprivacy */; };
+		B7488DD7F1544E8998BDD260 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0460F4E4E71F4DD299E5EC20 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		C0F0A61C365DDE85AB68C813 /* libPods-Elmify.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F7CA20C7EB2EE8A8EC5275B4 /* libPods-Elmify.a */; };
+		E3A3F94A1FE8310899E3144D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6702211C89984BFC653FC51 /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0F3C7DAE57AA85387B97E0B0 /* Pods-Elmify.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elmify.release.xcconfig"; path = "Target Support Files/Pods-Elmify/Pods-Elmify.release.xcconfig"; sourceTree = "<group>"; };
+		0460F4E4E71F4DD299E5EC20 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PrivacyInfo.xcprivacy; path = Elmify/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Elmify.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Elmify.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Elmify/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Elmify/Info.plist; sourceTree = "<group>"; };
-		5134073580FA8E41AFED19C9 /* libPods-Elmify.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Elmify.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9361E05EB7BD12095AE33F3B /* Pods-Elmify.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elmify.debug.xcconfig"; path = "Target Support Files/Pods-Elmify/Pods-Elmify.debug.xcconfig"; sourceTree = "<group>"; };
+		A2608C7897C6FB6EB23C014E /* Pods-Elmify.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elmify.debug.xcconfig"; path = "Target Support Files/Pods-Elmify/Pods-Elmify.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Elmify/SplashScreen.storyboard; sourceTree = "<group>"; };
-		AE783A5A358453740B5AA941 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Elmify/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C40392DB6A234608AC806C7F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = PrivacyInfo.xcprivacy; path = Elmify/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D196FBCD721F109EA7DC002C /* Pods-Elmify.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Elmify.release.xcconfig"; path = "Target Support Files/Pods-Elmify/Pods-Elmify.release.xcconfig"; sourceTree = "<group>"; };
+		E6702211C89984BFC653FC51 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Elmify/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Elmify/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Elmify-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Elmify-Bridging-Header.h"; path = "Elmify/Elmify-Bridging-Header.h"; sourceTree = "<group>"; };
+		F7CA20C7EB2EE8A8EC5275B4 /* libPods-Elmify.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Elmify.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,21 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				24F24EE6459F8B29148B9A93 /* libPods-Elmify.a in Frameworks */,
+				C0F0A61C365DDE85AB68C813 /* libPods-Elmify.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		01E753D0D5D57D0CEA49B118 /* Elmify */ = {
-			isa = PBXGroup;
-			children = (
-				AE783A5A358453740B5AA941 /* ExpoModulesProvider.swift */,
-			);
-			name = Elmify;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* Elmify */ = {
 			isa = PBXGroup;
 			children = (
@@ -61,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				C40392DB6A234608AC806C7F /* PrivacyInfo.xcprivacy */,
+				0460F4E4E71F4DD299E5EC20 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Elmify;
 			sourceTree = "<group>";
@@ -70,17 +62,34 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5134073580FA8E41AFED19C9 /* libPods-Elmify.a */,
+				F7CA20C7EB2EE8A8EC5275B4 /* libPods-Elmify.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4B00CB91270E9DFD1DB01170 /* ExpoModulesProviders */ = {
+		2DA72C327888B52E7A9062D4 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				01E753D0D5D57D0CEA49B118 /* Elmify */,
+				5745CC3AA8068CE470A06F70 /* Elmify */,
 			);
 			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		5745CC3AA8068CE470A06F70 /* Elmify */ = {
+			isa = PBXGroup;
+			children = (
+				E6702211C89984BFC653FC51 /* ExpoModulesProvider.swift */,
+			);
+			name = Elmify;
+			sourceTree = "<group>";
+		};
+		802D9EC2D1A48C40A1C21571 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				A2608C7897C6FB6EB23C014E /* Pods-Elmify.debug.xcconfig */,
+				D196FBCD721F109EA7DC002C /* Pods-Elmify.release.xcconfig */,
+			);
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -97,8 +106,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				98951F4413B2A99F1B6CE960 /* Pods */,
-				4B00CB91270E9DFD1DB01170 /* ExpoModulesProviders */,
+				802D9EC2D1A48C40A1C21571 /* Pods */,
+				2DA72C327888B52E7A9062D4 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -111,15 +120,6 @@
 				13B07F961A680F5B00A75B9A /* Elmify.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		98951F4413B2A99F1B6CE960 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				9361E05EB7BD12095AE33F3B /* Pods-Elmify.debug.xcconfig */,
-				0F3C7DAE57AA85387B97E0B0 /* Pods-Elmify.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -139,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Elmify" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				0C06E176A71C745FBA116494 /* [Expo] Configure project */,
+				498235CD9D34636FA89A4FE4 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				18F98439BC758208675E2669 /* [CP] Embed Pods Frameworks */,
+				313904F5057F6360B8733D5F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -166,7 +166,6 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -196,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				55D4B0A29A3B45BE95AE951B /* PrivacyInfo.xcprivacy in Resources */,
+				B7488DD7F1544E8998BDD260 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +241,29 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		0C06E176A71C745FBA116494 /* [Expo] Configure project */ = {
+		313904F5057F6360B8733D5F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Elmify/Pods-Elmify-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Elmify/Pods-Elmify-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		498235CD9D34636FA89A4FE4 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -265,28 +286,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Elmify/expo-configure-project.sh\"\n";
-		};
-		18F98439BC758208675E2669 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Elmify/Pods-Elmify-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Elmify/Pods-Elmify-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -332,7 +331,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				361AAB5089B14E8A9260A552 /* ExpoModulesProvider.swift in Sources */,
+				E3A3F94A1FE8310899E3144D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,14 +340,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9361E05EB7BD12095AE33F3B /* Pods-Elmify.debug.xcconfig */;
+			baseConfigurationReference = A2608C7897C6FB6EB23C014E /* Pods-Elmify.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Elmify/Elmify.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = RJ59PXFA29;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -356,12 +353,13 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = Elmify/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -380,22 +378,21 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0F3C7DAE57AA85387B97E0B0 /* Pods-Elmify.release.xcconfig */;
+			baseConfigurationReference = D196FBCD721F109EA7DC002C /* Pods-Elmify.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Elmify/Elmify.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = RJ59PXFA29;
 				INFOPLIST_FILE = Elmify/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
