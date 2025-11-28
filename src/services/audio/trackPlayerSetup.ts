@@ -1,6 +1,6 @@
 import TrackPlayer, { Event } from "react-native-track-player";
 
-export async function PlaybackService() {
+export const PlaybackService = async function () {
   try {
     TrackPlayer.addEventListener(Event.RemotePlay, () => TrackPlayer.play());
     TrackPlayer.addEventListener(Event.RemotePause, () => TrackPlayer.pause());
@@ -27,4 +27,4 @@ export async function PlaybackService() {
   } catch (error) {
     console.error("[PlaybackService] Error setting up event handlers:", error);
   }
-}
+};
