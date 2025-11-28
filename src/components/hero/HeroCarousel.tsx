@@ -338,7 +338,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   const {
     lecture: currentLecture,
     isPlaying,
-    setLecture,
+    addToQueue,
     play,
     pause,
   } = usePlayer();
@@ -387,27 +387,30 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             lecture={item}
             backgroundColor={getBackgroundColor(index)}
             onPlay={async () => {
-              if (item.lecture) {
-                const lectureId = item.lecture.id.toString();
+              if (!item.lecture) return;
 
-                // If this lecture is currently playing, toggle pause/play
-                if (currentLecture?.id === lectureId) {
-                  if (isPlaying) {
-                    await pause();
-                  } else {
-                    await play();
-                  }
+              const lectureId = item.lecture.id.toString();
+
+              // If this lecture is currently playing, toggle pause/play
+              if (currentLecture?.id === lectureId) {
+                if (isPlaying) {
+                  await pause();
                 } else {
-                  // Load and play new lecture
-                  setLecture({
-                    id: lectureId,
-                    title: item.lecture.title,
-                    speaker: item.lecture.speakerName || "Unknown Speaker",
-                    author: item.lecture.speakerName || "Unknown Speaker",
-                    thumbnail_url: item.lecture.thumbnailUrl,
-                    audio_url: "",
-                  });
+                  await play();
                 }
+              } else {
+                // BEST PRACTICE: Use addToQueue to properly load and play the lecture
+                // This fetches the audio URL and starts playback without navigation
+                const lectureFormat = {
+                  id: lectureId,
+                  title: item.lecture.title,
+                  speaker: item.lecture.speakerName || "Unknown Speaker",
+                  author: item.lecture.speakerName || "Unknown Speaker",
+                  audio_url: "", // Will be fetched by addToQueue
+                  thumbnail_url: item.lecture.thumbnailUrl,
+                };
+
+                await addToQueue(`lecture-${lectureId}`, [lectureFormat], 0);
               }
             }}
             onPress={() => {
