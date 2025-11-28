@@ -21,21 +21,16 @@ export class TrackPlayerService {
    * Setup track player with capabilities
    */
   static async setup(): Promise<void> {
-    console.log("🎵 [TrackPlayerService] ========================================");
-    console.log("🎵 [TrackPlayerService] setup() called");
-    console.log("🎵 [TrackPlayerService] Timestamp:", new Date().toISOString());
-    console.log("🎵 [TrackPlayerService] isSetup:", this.isSetup);
-    console.log("🎵 [TrackPlayerService] ========================================");
-
     if (this.isSetup) {
-      console.log("🎵 [TrackPlayerService] ⚠️ Already setup - resetting existing playback");
       // Already setup - but we need to stop any existing playback on app refresh
       // The native player persists across JS reloads
       try {
         await TrackPlayer.reset();
-        console.log("🎵 [TrackPlayerService] ✅ Reset completed successfully");
       } catch (error) {
-        console.error("🎵 [TrackPlayerService] ❌ Error resetting existing playback:", error);
+        console.error(
+          "🎵 [TrackPlayerService] ❌ Error resetting existing playback:",
+          error
+        );
       }
       return;
     }
@@ -54,27 +49,18 @@ export class TrackPlayerService {
         maxCacheSize: 50000, // 50MB cache (balanced for streaming)
       };
 
-      console.log("🎵 [TrackPlayerService] 📋 Buffer config:", JSON.stringify(bufferConfig, null, 2));
-      console.log("🎵 [TrackPlayerService] 🔧 Starting setupPlayer()...");
       await TrackPlayer.setupPlayer(bufferConfig);
-      console.log("🎵 [TrackPlayerService] ✅ setupPlayer() completed successfully");
-
-      // CRITICAL: Activate audio session for iOS lock screen controls
-      console.log("🎵 [TrackPlayerService] 🔊 Activating audio session for lock screen...");
       try {
         // This is needed for iOS to recognize the app as an active audio app
         await TrackPlayer.setVolume(1.0);
-        console.log("🎵 [TrackPlayerService] ✅ Audio session activated");
       } catch (error) {
-        console.error("🎵 [TrackPlayerService] ⚠️ Could not activate audio session:", error);
+        console.error(
+          "🎵 [TrackPlayerService] ⚠️ Could not activate audio session:",
+          error
+        );
       }
 
-      // Reset any existing queue from previous app session
-      console.log("🎵 [TrackPlayerService] 🧹 Resetting queue from previous session...");
       await TrackPlayer.reset();
-      console.log("🎵 [TrackPlayerService] ✅ Queue reset completed");
-
-      console.log("🎵 [TrackPlayerService] 🎛️ Configuring capabilities and options...");
       const options = {
         android: {
           appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
@@ -104,22 +90,13 @@ export class TrackPlayerService {
         progressUpdateEventInterval: 2,
       };
 
-      console.log("🎵 [TrackPlayerService] 📋 Capabilities:", options.capabilities);
-      console.log("🎵 [TrackPlayerService] 📋 Compact capabilities:", options.compactCapabilities);
-      console.log("🎵 [TrackPlayerService] 📋 Jump intervals: forward=15s, backward=15s");
-
       await TrackPlayer.updateOptions(options);
-      console.log("🎵 [TrackPlayerService] ✅ updateOptions() completed successfully");
-
       this.isSetup = true;
-      console.log("🎵 [TrackPlayerService] ========================================");
-      console.log("🎵 [TrackPlayerService] ✅ SETUP COMPLETED SUCCESSFULLY");
-      console.log("🎵 [TrackPlayerService] isSetup now:", this.isSetup);
-      console.log("🎵 [TrackPlayerService] ========================================");
     } catch (error) {
-      console.error("🎵 [TrackPlayerService] ❌❌❌ CRITICAL ERROR during setup:");
+      console.error(
+        "🎵 [TrackPlayerService] ❌❌❌ CRITICAL ERROR during setup:"
+      );
       console.error("🎵 [TrackPlayerService] Error:", error);
-      console.error("🎵 [TrackPlayerService] Error stack:", error.stack);
       throw error;
     }
   }
