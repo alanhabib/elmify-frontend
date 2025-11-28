@@ -21,18 +21,6 @@ import type {
   PaginatedResponse,
 } from "../types";
 
-/**
- * Get all speakers (paginated)
- *
- * @param params - Pagination parameters
- * @returns List of speakers
- *
- * @example
- * const response = await speakerAPI.getAll({ page: 0, size: 20 });
- * if (response.success) {
- *   console.log(response.data);
- * }
- */
 export async function getAll(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<SpeakerResponse>>> {
@@ -54,18 +42,6 @@ export async function getAll(
   return apiClient.get<PaginatedResponse<SpeakerResponse>>(endpoint);
 }
 
-/**
- * Get speaker by ID
- *
- * @param id - Speaker ID
- * @returns Speaker details
- *
- * @example
- * const response = await speakerAPI.getById('123');
- * if (response.success) {
- *   console.log(response.data.name);
- * }
- */
 export async function getById(
   id: string
 ): Promise<APIResponse<SpeakerDetailResponse>> {

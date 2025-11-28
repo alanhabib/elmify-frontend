@@ -39,52 +39,33 @@ export class StreamingService {
       if (options.useCache) {
         const cachedUrl = this.getCachedUrl(lecture.id.toString());
         if (cachedUrl) {
-          console.log('[StreamingService] Using cached URL for lecture:', lecture.id);
           return cachedUrl;
         }
       }
 
       // Use new streaming API to get proxy stream URL
-      const response = await streamingAPI.getAudioStreamUrl(lecture.id.toString());
+      const response = await streamingAPI.getAudioStreamUrl(
+        lecture.id.toString()
+      );
 
       if (!response.success || !response.data?.url) {
-        console.error('[StreamingService] Failed to get streaming URL:', {
-          lectureId: lecture.id,
-          error: response.error,
-          status: response.status,
-        });
         // Note: apiClient already handles 401 retry with token refresh
         return null;
       }
 
       let streamUrl = response.data.url;
 
-      // Direct R2 CDN URLs are returned as-is (already full HTTPS URLs)
-      // No token needed since R2 bucket is public via cdn.elmify.store
-      console.log('[StreamingService] Got streaming URL:', {
-        lectureId: lecture.id,
-        urlLength: streamUrl.length,
-        urlPreview: streamUrl.substring(0, 80) + '...',
-      });
-
       // CRITICAL FIX: Properly encode URLs with spaces for TrackPlayer/iOS AVPlayer
       // Safari handles unencoded spaces, but native iOS AVPlayer requires proper encoding
       streamUrl = encodeURI(streamUrl);
-
-      console.log('🎵 StreamingService: Received URL from backend:', response.data.url);
-      console.log('🎵 StreamingService: Encoded URL:', streamUrl);
-      console.log('🎵 StreamingService: URL starts with https://', streamUrl.startsWith('https://'));
-      console.log('🎵 StreamingService: URL contains cdn.elmify.store:', streamUrl.includes('cdn.elmify.store'));
-
       // Cache the URL if enabled
       if (options.useCache) {
         this.setCachedUrl(lecture.id.toString(), streamUrl);
       }
 
-      console.log('🎵 StreamingService: Final URL being returned:', streamUrl);
       return streamUrl;
     } catch (error) {
-      console.error('[StreamingService] Exception getting streaming URL:', {
+      console.error("[StreamingService] Exception getting streaming URL:", {
         lectureId: lecture.id,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -107,9 +88,7 @@ export class StreamingService {
   /**
    * Create fetch options for audio requests
    */
-  static createAudioFetchOptions(
-    options: StreamingOptions = {}
-  ): RequestInit {
+  static createAudioFetchOptions(options: StreamingOptions = {}): RequestInit {
     const headers = this.getStreamingHeaders();
 
     const fetchOptions: RequestInit = {
@@ -144,8 +123,8 @@ export class StreamingService {
 
       return response.ok;
     } catch (error) {
-      console.error('[StreamingService] URL validation failed:', {
-        url: url.substring(0, 80) + '...',
+      console.error("[StreamingService] URL validation failed:", {
+        url: url.substring(0, 80) + "...",
         error: error instanceof Error ? error.message : String(error),
       });
       return false;
@@ -165,7 +144,6 @@ export class StreamingService {
     // Check if cache is expired
     const now = Date.now();
     if (now - cached.timestamp > this.CACHE_EXPIRATION_MS) {
-      console.log('[StreamingService] Cache expired for lecture:', lectureId);
       this.urlCache.delete(lectureId);
       return null;
     }
@@ -181,7 +159,6 @@ export class StreamingService {
       url,
       timestamp: Date.now(),
     });
-    console.log('[StreamingService] Cached URL for lecture:', lectureId);
   }
 
   /**
@@ -189,7 +166,6 @@ export class StreamingService {
    */
   static clearCache(): void {
     this.urlCache.clear();
-    console.log('[StreamingService] Cache cleared');
   }
 
   /**
@@ -204,10 +180,6 @@ export class StreamingService {
         this.urlCache.delete(lectureId);
         removedCount++;
       }
-    }
-
-    if (removedCount > 0) {
-      console.log('[StreamingService] Removed', removedCount, 'expired URLs from cache');
     }
   }
 }

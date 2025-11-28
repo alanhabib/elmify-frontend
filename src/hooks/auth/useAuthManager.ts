@@ -26,11 +26,6 @@ export const useAuthManager = () => {
       async () => {
         try {
           const token = await getToken();
-          // For easy Postman copy-paste:
-          // if (token) {
-          //   console.log("📋 Copy this JWT for Postman Authorization header:");
-          //   console.log(`Bearer ${token}`);
-          // }
           return token;
         } catch (error) {
           console.warn("Failed to get token from Clerk:", error);
@@ -68,7 +63,7 @@ export const useAuthManager = () => {
 
       syncMutation.mutate({
         clerkId: user.id,
-        email: user.emailAddresses[0]?.emailAddress || '',
+        email: user.emailAddresses[0]?.emailAddress || "",
         fullName: user.fullName || undefined,
         profileImageUrl: user.imageUrl || undefined,
       });

@@ -26,9 +26,11 @@ export class TrackPlayerService {
       // The native player persists across JS reloads
       try {
         await TrackPlayer.reset();
-        console.log("[TrackPlayer] Reset existing playback on re-setup");
       } catch (error) {
-        // Ignore errors during reset
+        console.error(
+          "[TrackPlayer] Error resetting existing playback:",
+          error
+        );
       }
       return;
     }
@@ -47,13 +49,10 @@ export class TrackPlayerService {
         maxCacheSize: 50000, // 50MB cache (balanced for streaming)
       };
 
-      console.log("[TrackPlayer] Setting up with iOS default buffer settings");
-
       await TrackPlayer.setupPlayer(bufferConfig);
 
       // Reset any existing queue from previous app session
       await TrackPlayer.reset();
-      console.log("[TrackPlayer] Cleared existing queue after setup");
 
       await TrackPlayer.updateOptions({
         android: {
@@ -121,23 +120,12 @@ export class TrackPlayerService {
   ): Promise<void> {
     const track = this.lectureToTrack(lecture);
 
-    console.log("[TrackPlayer] Loading track:", {
-      id: track.id,
-      title: track.title,
-      url_length: track.url?.length || 0,
-      url_preview: track.url?.substring(0, 80) + "...",
-      has_url: !!track.url,
-    });
-
     try {
       await TrackPlayer.reset();
       await TrackPlayer.add(track);
 
       // Seek to saved position BEFORE playing to avoid hearing the beginning
       if (startPosition && startPosition > 0) {
-        console.log(
-          `[TrackPlayer] Seeking to ${startPosition}s before playing`
-        );
         await TrackPlayer.seekTo(startPosition);
       }
 
@@ -285,19 +273,9 @@ export class TrackPlayerService {
    * Call this during app initialization to monitor playback health
    */
   static setupDiagnosticListeners(): void {
-    // Monitor playback state changes
-    TrackPlayer.addEventListener(Event.PlaybackState, (state) => {
-      console.log("[TrackPlayer] State changed:", state);
-    });
-
     // Monitor when playback is waiting (buffering)
     TrackPlayer.addEventListener(Event.PlaybackError, (error) => {
       console.error("[TrackPlayer] Playback error:", error);
-    });
-
-    // Monitor track changes
-    TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, (data) => {
-      console.log("[TrackPlayer] Track changed:", data);
     });
   }
 
@@ -305,7 +283,7 @@ export class TrackPlayerService {
    * Destroy player
    */
   static async destroy(): Promise<void> {
-    await TrackPlayer.destroy();
+    await TrackPlayer.stop();
     this.isSetup = false;
   }
 }

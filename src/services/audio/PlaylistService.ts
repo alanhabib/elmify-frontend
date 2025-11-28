@@ -1,6 +1,6 @@
-import { StreamingService } from './StreamingService';
-import { UILecture } from '@/types/ui';
-import { apiClient } from '@/api/client';
+import { StreamingService } from "./StreamingService";
+import { UILecture } from "@/types/ui";
+import { apiClient } from "@/api/client";
 
 /**
  * Cached URL with expiry
@@ -76,24 +76,31 @@ class PlaylistService {
 
     // Return cached if valid
     if (cached && now < cached.expiresAt) {
-      console.log(`✅ Using cached playlist URLs for ${collectionId}`);
-
       // Check if we should refresh in background
-      if (now > cached.cachedAt + (this.URL_TTL_MS * this.REFRESH_THRESHOLD)) {
-        console.log('🔄 Refreshing URLs in background...');
+      if (now > cached.cachedAt + this.URL_TTL_MS * this.REFRESH_THRESHOLD) {
         this.refreshInBackground(collectionId, lectures);
       }
 
-      return new Map(Array.from(cached.urls.entries()).map(([id, cached]) => [id, cached.url]));
+      return new Map(
+        Array.from(cached.urls.entries()).map(([id, cached]) => [
+          id,
+          cached.url,
+        ])
+      );
     }
 
     // Try backend manifest endpoint first
     try {
       return await this.fetchFromBackend(collectionId, lectures, onProgress);
     } catch (error) {
-      console.error('❌ Backend manifest failed, falling back to client-side sequential fetch');
-      console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
-      console.error('❌ This will be SLOW and may hit rate limits!');
+      console.error(
+        "❌ Backend manifest failed, falling back to client-side sequential fetch"
+      );
+      console.error(
+        "❌ Error details:",
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error("❌ This will be SLOW and may hit rate limits!");
       // Fallback to client-side sequential fetching
       return this.fetchAndCache(collectionId, lectures, onProgress);
     }
@@ -107,34 +114,23 @@ class PlaylistService {
     lectures: UILecture[],
     onProgress?: ProgressCallback
   ): Promise<Map<string, string>> {
-    console.log(`🌐 Fetching playlist manifest from backend for ${collectionId} (${lectures.length} tracks)...`);
-
     const startTime = Date.now();
 
     const requestPayload = {
       collectionId,
-      lectureIds: lectures.map(l => l.id.toString()),
+      lectureIds: lectures.map((l) => l.id.toString()),
     };
 
-    console.log(`📤 Manifest request payload:`, {
-      collectionId: requestPayload.collectionId,
-      lectureCount: requestPayload.lectureIds.length,
-      firstLectureId: requestPayload.lectureIds[0],
-      lastLectureId: requestPayload.lectureIds[requestPayload.lectureIds.length - 1],
-    });
-
     // Call backend playlist manifest endpoint
-    const response = await apiClient.post<PlaylistManifestResponse>('/playlists/manifest', requestPayload);
-
-    console.log(`📥 Manifest response:`, {
-      success: response.success,
-      status: response.status,
-      hasData: !!response.data,
-      error: response.error,
-    });
+    const response = await apiClient.post<PlaylistManifestResponse>(
+      "/playlists/manifest",
+      requestPayload
+    );
 
     if (!response.success || !response.data) {
-      throw new Error(`Backend manifest failed: ${response.error || 'Unknown error'}`);
+      throw new Error(
+        `Backend manifest failed: ${response.error || "Unknown error"}`
+      );
     }
 
     const manifest = response.data;
@@ -167,9 +163,10 @@ class PlaylistService {
     });
 
     const elapsedMs = Date.now() - startTime;
-    console.log(`✅ Backend manifest received: ${urls.size} URLs in ${elapsedMs}ms (cached: ${manifest.metadata.cached})`);
 
-    return new Map(Array.from(urls.entries()).map(([id, cached]) => [id, cached.url]));
+    return new Map(
+      Array.from(urls.entries()).map(([id, cached]) => [id, cached.url])
+    );
   }
 
   /**
@@ -180,8 +177,6 @@ class PlaylistService {
     lectures: UILecture[],
     onProgress?: ProgressCallback
   ): Promise<Map<string, string>> {
-    console.log(`🌐 Fetching ${lectures.length} URLs for collection ${collectionId}...`);
-
     const urls = new Map<string, CachedUrl>();
     const now = Date.now();
     const expiresAt = now + this.URL_TTL_MS;
@@ -208,11 +203,15 @@ class PlaylistService {
 
         // Rate limiting delay (except for last item)
         if (completed < lectures.length) {
-          await new Promise(resolve => setTimeout(resolve, this.BATCH_DELAY_MS));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.BATCH_DELAY_MS)
+          );
         }
-
       } catch (error) {
-        console.error(`❌ Failed to fetch URL for lecture ${lecture.id}:`, error);
+        console.error(
+          `❌ Failed to fetch URL for lecture ${lecture.id}:`,
+          error
+        );
         // Continue with other tracks even if one fails
       }
     }
@@ -226,18 +225,20 @@ class PlaylistService {
       expiresAt,
     });
 
-    console.log(`✅ Cached ${urls.size}/${lectures.length} URLs for collection ${collectionId}`);
-
-    return new Map(Array.from(urls.entries()).map(([id, cached]) => [id, cached.url]));
+    return new Map(
+      Array.from(urls.entries()).map(([id, cached]) => [id, cached.url])
+    );
   }
 
   /**
    * Refresh URLs in background without blocking
    */
-  private async refreshInBackground(collectionId: string, lectures: UILecture[]): Promise<void> {
+  private async refreshInBackground(
+    collectionId: string,
+    lectures: UILecture[]
+  ): Promise<void> {
     try {
       await this.fetchAndCache(collectionId, lectures);
-      console.log(`✅ Refreshed URLs for collection ${collectionId}`);
     } catch (error) {
       console.error(`❌ Background refresh failed for ${collectionId}:`, error);
     }
@@ -270,10 +271,8 @@ class PlaylistService {
   clearCache(collectionId?: string): void {
     if (collectionId) {
       this.cache.delete(collectionId);
-      console.log(`🗑️ Cleared cache for collection ${collectionId}`);
     } else {
       this.cache.clear();
-      console.log('🗑️ Cleared all playlist cache');
     }
   }
 
@@ -282,7 +281,7 @@ class PlaylistService {
    */
   getCacheStats(): { collections: number; totalUrls: number } {
     let totalUrls = 0;
-    this.cache.forEach(playlist => {
+    this.cache.forEach((playlist) => {
       totalUrls += playlist.urls.size;
     });
 

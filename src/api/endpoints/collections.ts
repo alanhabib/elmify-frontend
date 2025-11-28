@@ -21,18 +21,6 @@ import type {
   PaginatedResponse,
 } from "../types";
 
-/**
- * Get all collections (paginated)
- *
- * @param params - Pagination parameters
- * @returns List of collections
- *
- * @example
- * const response = await collectionAPI.getAll({ page: 0, size: 20 });
- * if (response.success) {
- *   console.log(response.data);
- * }
- */
 export async function getAll(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<CollectionResponse>>> {
@@ -54,18 +42,6 @@ export async function getAll(
   return apiClient.get<PaginatedResponse<CollectionResponse>>(endpoint);
 }
 
-/**
- * Get collection by ID
- *
- * @param id - Collection ID
- * @returns Collection details
- *
- * @example
- * const response = await collectionAPI.getById('123');
- * if (response.success) {
- *   console.log(response.data.title);
- * }
- */
 export async function getById(
   id: string
 ): Promise<APIResponse<CollectionDetailResponse>> {
@@ -76,16 +52,6 @@ export async function getById(
   return result;
 }
 
-/**
- * Get collections by speaker ID
- *
- * @param speakerId - Speaker ID
- * @param params - Pagination parameters
- * @returns Collections for the speaker
- *
- * @example
- * const response = await collectionAPI.getBySpeaker('123', { limit: 10 });
- */
 export async function getBySpeaker(
   speakerId: string,
   params?: PaginationParams
@@ -110,16 +76,6 @@ export async function getBySpeaker(
   return result;
 }
 
-/**
- * Search collections by title
- *
- * @param query - Search query
- * @param params - Pagination parameters
- * @returns Matching collections
- *
- * @example
- * const response = await collectionAPI.search('react', { limit: 10 });
- */
 export async function search(
   query: string,
   params?: PaginationParams

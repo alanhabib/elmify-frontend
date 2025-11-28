@@ -21,18 +21,6 @@ import type {
   PaginatedResponse,
 } from "../types";
 
-/**
- * Get all lectures (paginated)
- *
- * @param params - Pagination parameters
- * @returns List of lectures
- *
- * @example
- * const response = await lectureAPI.getAll({ page: 0, size: 20 });
- * if (response.success) {
- *   console.log(response.data);
- * }
- */
 export async function getAll(
   params?: PaginationParams
 ): Promise<APIResponse<PaginatedResponse<LectureResponse>>> {
@@ -54,37 +42,12 @@ export async function getAll(
   return apiClient.get<PaginatedResponse<LectureResponse>>(endpoint);
 }
 
-/**
- * Get lecture by ID
- *
- * @param id - Lecture ID
- * @returns Lecture details
- *
- * @example
- * const response = await lectureAPI.getById('123');
- * if (response.success) {
- *   console.log(response.data.title);
- * }
- */
 export async function getById(
   id: string
 ): Promise<APIResponse<LectureDetailResponse>> {
   return apiClient.get<LectureDetailResponse>(`/lectures/${id}`);
 }
 
-/**
- * Get lectures by collection ID
- *
- * @param collectionId - Collection ID
- * @param params - Pagination parameters
- * @returns Lectures in the collection
- *
- * @example
- * const response = await lectureAPI.getByCollection('456');
- * if (response.success) {
- *   console.log(response.data);
- * }
- */
 export async function getByCollection(
   collectionId: string,
   params?: PaginationParams

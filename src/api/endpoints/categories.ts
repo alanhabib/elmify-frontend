@@ -23,45 +23,14 @@ import type {
   PaginatedResponse,
 } from "../types";
 
-/**
- * Get all top-level categories
- *
- * @returns List of top-level categories
- *
- * @example
- * const response = await categoryAPI.getAll();
- * if (response.success) {
- *   console.log(response.data);
- * }
- */
 export async function getAll(): Promise<APIResponse<CategoryResponse[]>> {
   return apiClient.get<CategoryResponse[]>("/categories");
 }
 
-/**
- * Get featured categories
- *
- * @returns List of featured categories
- *
- * @example
- * const response = await categoryAPI.getFeatured();
- */
 export async function getFeatured(): Promise<APIResponse<CategoryResponse[]>> {
   return apiClient.get<CategoryResponse[]>("/categories/featured");
 }
 
-/**
- * Get category by slug with subcategories and featured collections
- *
- * @param slug - Category slug
- * @returns Category details with subcategories
- *
- * @example
- * const response = await categoryAPI.getBySlug('quran');
- * if (response.success) {
- *   console.log(response.data.subcategories);
- * }
- */
 export async function getBySlug(
   slug: string
 ): Promise<APIResponse<CategoryDetailResponse>> {

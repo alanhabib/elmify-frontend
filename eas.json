@@ -1,5 +1,6 @@
 {
   "cli": {
+    "promptToConfigurePushNotifications": false,
     "version": ">= 16.19.1",
     "appVersionSource": "remote"
   },
@@ -8,6 +9,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
+        "resourceClass": "m-medium",
         "buildConfiguration": "Debug",
         "simulator": true
       }
@@ -15,6 +17,7 @@
     "preview": {
       "distribution": "internal",
       "ios": {
+        "resourceClass": "m-medium",
         "buildConfiguration": "Release",
         "simulator": false
       }

@@ -104,7 +104,6 @@ export function useSyncUser() {
       return response.data!;
     },
     onSuccess: (data) => {
-      console.log("User synced successfully:", data.id);
       // Update the user profile cache with synced data
       queryClient.setQueryData(queryKeys.user.profile(), data);
     },
