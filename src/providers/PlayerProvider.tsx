@@ -158,13 +158,17 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Save position when paused or stopped (best practice: user-initiated actions only)
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {
+    console.log("🎵 [PlayerProvider] 🎛️ PlaybackState event received:", event.state);
     if (
       event.type === Event.PlaybackState &&
       (event.state === State.Paused || event.state === State.Stopped)
     ) {
+      console.log("🎵 [PlayerProvider] 💾 Saving position on pause/stop");
       const position = await TrackPlayerService.getPosition();
+      console.log("🎵 [PlayerProvider] 📍 Current position:", position, "seconds");
       if (position > 0) {
         savePosition(Math.floor(position * 1000));
+        console.log("🎵 [PlayerProvider] ✅ Position saved");
       }
     }
   });
@@ -464,17 +468,27 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Sync React state when native track changes
   useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async (event) => {
-    if (event.type !== Event.PlaybackActiveTrackChanged || !event.track) return;
+    console.log("🎵 [PlayerProvider] 🔄 PlaybackActiveTrackChanged event received");
+    if (event.type !== Event.PlaybackActiveTrackChanged || !event.track) {
+      console.log("🎵 [PlayerProvider] ⚠️ No track in event, skipping");
+      return;
+    }
 
     const trackId = event.track.id;
+    console.log("🎵 [PlayerProvider] 📀 Track changed to ID:", trackId);
+    console.log("🎵 [PlayerProvider] 🎵 Track title:", event.track.title);
 
     // Find lecture in queue and update state
     const lecture = queueRef.current.find((l) => l.id === trackId);
     if (lecture) {
+      console.log("🎵 [PlayerProvider] ✅ Found lecture in queue:", lecture.title);
       setLecture(lecture);
       currentLectureId.current = lecture.id;
       setTrackLoadedId(lecture.id);
       hasSeekingToSavedPosition.current = null;
+      console.log("🎵 [PlayerProvider] ✅ State updated successfully");
+    } else {
+      console.log("🎵 [PlayerProvider] ⚠️ Lecture not found in queue for ID:", trackId);
     }
   });
 
@@ -505,12 +519,58 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
 
   // Auto-play next when current finishes
   useTrackPlayerEvents([Event.PlaybackQueueEnded], () => {
+    console.log("🎵 [PlayerProvider] 🏁 PlaybackQueueEnded event received");
+    console.log("🎵 [PlayerProvider] 🔁 Repeat mode:", repeatMode);
     if (repeatMode === "one") {
+      console.log("🎵 [PlayerProvider] 🔂 Repeat one - seeking to 0 and replaying");
       TrackPlayerService.seekTo(0);
       TrackPlayerService.play();
     } else {
+      console.log("🎵 [PlayerProvider] ⏭️ Playing next track");
       playNext();
     }
+  });
+
+  // CRITICAL: Handle lock screen remote control events in main app context
+  // With Expo new architecture, these MUST be in the main JS thread, not in playback service
+  useTrackPlayerEvents([Event.RemotePlay], async () => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE PLAY from lock screen!");
+    await trackPlayer.play();
+  });
+
+  useTrackPlayerEvents([Event.RemotePause], async () => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE PAUSE from lock screen!");
+    await trackPlayer.pause();
+  });
+
+  useTrackPlayerEvents([Event.RemoteNext], async () => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE NEXT from lock screen!");
+    await playNext();
+  });
+
+  useTrackPlayerEvents([Event.RemotePrevious], async () => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE PREVIOUS from lock screen!");
+    await playPrevious();
+  });
+
+  useTrackPlayerEvents([Event.RemoteJumpForward], async (event) => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE JUMP FORWARD from lock screen!", event.interval);
+    const position = await TrackPlayerService.getPosition();
+    const duration = await TrackPlayerService.getDuration();
+    const newPosition = Math.min(position + (event.interval || 15), duration);
+    await TrackPlayerService.seekTo(newPosition);
+  });
+
+  useTrackPlayerEvents([Event.RemoteJumpBackward], async (event) => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE JUMP BACKWARD from lock screen!", event.interval);
+    const position = await TrackPlayerService.getPosition();
+    const newPosition = Math.max(position - (event.interval || 15), 0);
+    await TrackPlayerService.seekTo(newPosition);
+  });
+
+  useTrackPlayerEvents([Event.RemoteSeek], async (event) => {
+    console.log("🔥 [PlayerProvider] 🎮 REMOTE SEEK from lock screen!", event.position);
+    await TrackPlayerService.seekTo(event.position);
   });
 
   return (
