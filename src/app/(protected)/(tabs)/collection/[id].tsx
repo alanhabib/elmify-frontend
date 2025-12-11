@@ -45,7 +45,9 @@ export default function CollectionScreen() {
     data: lectures = [],
     isLoading: lecturesLoading,
     isError: lecturesError,
-  } = useLecturesByCollection(id || "");
+  } = useLecturesByCollection(id || "", {
+    params: { limit: 1000 } // Large limit to show all lectures in a collection
+  });
 
   const isLoading = collectionLoading || lecturesLoading;
   const hasError = collectionError || lecturesError;

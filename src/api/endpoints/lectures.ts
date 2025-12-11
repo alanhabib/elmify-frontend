@@ -58,7 +58,7 @@ export async function getByCollection(
     searchParams.append("page", params.page.toString());
   }
   if (params?.limit !== undefined) {
-    searchParams.append("limit", params.limit.toString());
+    searchParams.append("size", params.limit.toString()); // Spring Data uses 'size' parameter
   }
 
   const query = searchParams.toString();
