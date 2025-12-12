@@ -3,7 +3,7 @@
     "name": "Elmify",
     "slug": "elmify",
     "scheme": "elmify",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.elmify.app",
-      "buildNumber": "31",
+      "buildNumber": "32",
       "deploymentTarget": "15.1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
