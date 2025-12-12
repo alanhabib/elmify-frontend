@@ -43,9 +43,18 @@ export const STORAGE_BASE_URL = MINIO_BASE_URL;
 
 /**
  * Environment flags
+ * Uses EXPO_PUBLIC_ENVIRONMENT for production builds (more reliable than __DEV__)
  */
-export const IS_DEVELOPMENT = __DEV__;
-export const IS_PRODUCTION = !__DEV__;
+const getIsProduction = (): boolean => {
+  const envVar = process.env.EXPO_PUBLIC_ENVIRONMENT;
+  if (envVar) {
+    return envVar === 'production';
+  }
+  return !__DEV__;
+};
+
+export const IS_PRODUCTION = getIsProduction();
+export const IS_DEVELOPMENT = !IS_PRODUCTION;
 
 /**
  * Logging configuration

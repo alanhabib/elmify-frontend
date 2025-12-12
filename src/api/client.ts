@@ -250,6 +250,18 @@ export const API_CONFIG: Record<string, APIConfig> = {
 };
 
 /**
+ * Determine environment from EXPO_PUBLIC_ENVIRONMENT or fallback to __DEV__
+ * This is more reliable for production builds (TestFlight, App Store)
+ */
+const getEnvironment = (): 'development' | 'production' => {
+  const envVar = process.env.EXPO_PUBLIC_ENVIRONMENT;
+  if (envVar === 'production' || envVar === 'development') {
+    return envVar;
+  }
+  return __DEV__ ? 'development' : 'production';
+};
+
+/**
  * Default API client instance
  * Use this throughout your app
  *
@@ -258,5 +270,5 @@ export const API_CONFIG: Record<string, APIConfig> = {
  * const response = await apiClient.get('/speakers');
  */
 export const apiClient = new APIClient(
-  API_CONFIG[__DEV__ ? "development" : "production"]
+  API_CONFIG[getEnvironment()]
 );
