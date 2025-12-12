@@ -4,9 +4,8 @@ import { Stack } from "expo-router";
 import { DarkTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { ClerkProvider } from "@clerk/clerk-expo";
 import PlayerProvider from "@/providers/PlayerProvider";
-import { useAuthManager } from "@/hooks/auth/useAuthManager";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 
 import { QueryProvider } from "@/providers/QueryProvider";
@@ -23,12 +22,6 @@ const theme = {
   },
 };
 
-// Auth initializer component that sets up AuthManager
-function AuthManagerInitializer({ children }: { children: React.ReactNode }) {
-  useAuthManager(); // Initialize AuthManager with Clerk hooks
-  return <>{children}</>;
-}
-
 export default function RootLayout() {
 
   if (!process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY) {
@@ -44,16 +37,12 @@ export default function RootLayout() {
               publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
               tokenCache={tokenCache}
             >
-              <ClerkLoaded>
-                <AuthManagerInitializer>
-                  <PlayerProvider>
-                    <Stack screenOptions={{ headerShown: false }}>
-                      <Stack.Screen name="(auth)" />
-                      <Stack.Screen name="(protected)" />
-                    </Stack>
-                  </PlayerProvider>
-                </AuthManagerInitializer>
-              </ClerkLoaded>
+              <PlayerProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(protected)" />
+                </Stack>
+              </PlayerProvider>
             </ClerkProvider>
           </QueryProvider>
         </NavigationThemeProvider>
