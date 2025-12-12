@@ -57,7 +57,8 @@
     "@playwright/test": "^1.55.1",
     "@types/react": "~19.1.10",
     "pg": "^8.16.3",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "yaml": "^2.8.2"
   },
   "private": true
 }
