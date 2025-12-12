@@ -6,7 +6,7 @@ PODS:
   - EXJSONUtils (0.15.0)
   - EXManifests (1.0.10):
     - ExpoModulesCore
-  - Expo (54.0.27):
+  - Expo (54.0.28):
     - ExpoModulesCore
     - hermes-engine
     - RCTRequired
@@ -214,7 +214,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (14.0.10):
     - ExpoModulesCore
-  - ExpoHead (6.0.17):
+  - ExpoHead (6.0.18):
     - ExpoModulesCore
     - RNScreens
   - ExpoKeepAwake (15.0.8):
@@ -2580,7 +2580,7 @@ SPEC CHECKSUMS:
   EXConstants: c378c1b344ff1ecfbad27b90f0e48d1d0ead8cbb
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
-  Expo: 3d19389232751e415391827839a629100a3c6a64
+  Expo: e502d1f8830a34019d835f182fdce94fdba458c2
   expo-dev-client: 425ee077d6754a98cfe3a2e2410d29b440b24c9d
   expo-dev-launcher: a4f4cdef064ab1fb8621e5b8c7c457cd6e9568c3
   expo-dev-menu: 05b18812110c175814c6af0d09dd658abcc5e00d
@@ -2591,7 +2591,7 @@ SPEC CHECKSUMS:
   ExpoCrypto: b6105ebaa15d6b38a811e71e43b52cd934945322
   ExpoFileSystem: 3592defb5faa3c5866a2900eae87ceec8cc0489f
   ExpoFont: 35ac6191ed86bbf56b3ebd2d9154eda9fad5b509
-  ExpoHead: 5611b33d6b983922d0233367ee6ab65633364dfd
+  ExpoHead: 5d292008999eb420f3470dbcfbd597cc5e177540
   ExpoKeepAwake: 55f75eca6499bb9e4231ebad6f3e9cb8f99c0296
   ExpoLinearGradient: 809102bdb979f590083af49f7fa4805cd931bd58
   ExpoLinking: f4c4a351523da72a6bfa7e1f4ca92aee1043a3ca
