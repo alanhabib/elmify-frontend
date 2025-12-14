@@ -1,0 +1,299 @@
+name: iOS Production Build & Deploy
+
+# ============================================================================
+# WHEN THIS RUNS
+# ============================================================================
+# This workflow automatically builds and deploys your iOS app when:
+# - Code is pushed to the 'main' branch
+# - A pull request is merged to 'main'
+# You can also trigger it manually from the Actions tab
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+# ============================================================================
+# WORKFLOW CONFIGURATION
+# ============================================================================
+jobs:
+  build-ios:
+    name: Build & Deploy iOS App
+
+    # IMPORTANT: iOS apps must be built on macOS runners
+    # Why: Xcode and iOS SDK are only available on macOS
+    # Cost: macOS runners use 10x minutes (e.g., 10 mins = 100 mins from quota)
+    runs-on: macos-14 # Latest stable macOS with Xcode 15+
+
+    # Increase timeout for long builds (default is 360 mins)
+    # Why: iOS builds with pods can take 15-30 minutes
+    timeout-minutes: 60
+
+    steps:
+      # ========================================================================
+      # STEP 1: Checkout Code
+      # ========================================================================
+      # Downloads your repository code to the runner
+      # Why: GitHub Actions runners start empty, need your code to build
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full git history (needed for versioning)
+
+      # ========================================================================
+      # STEP 2: Setup Node.js
+      # ========================================================================
+      # Installs Node.js runtime environment
+      # Why: Your app uses React Native/Expo which requires Node.js
+      # Why: Metro bundler (JavaScript bundler) runs on Node.js
+      # Why: npm/npx commands need Node.js to run
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Match your local development version
+          cache: 'npm' # Caches node_modules to speed up future builds
+
+      # ========================================================================
+      # STEP 3: Install JavaScript Dependencies
+      # ========================================================================
+      # Installs all packages from package.json (React Native, Expo, etc.)
+      # Why: Your app code imports these libraries
+      # Why: Metro bundler needs these to create the JavaScript bundle
+      # Uses 'npm ci' instead of 'npm install' for reproducible builds
+      - name: Install npm Dependencies
+        run: npm ci
+        # Why 'npm ci':
+        # - Deletes node_modules and does fresh install
+        # - Uses exact versions from package-lock.json
+        # - Faster and more reliable in CI environments
+        # - Fails if package.json and package-lock.json are out of sync
+
+      # ========================================================================
+      # STEP 4: Setup Ruby
+      # ========================================================================
+      # Installs Ruby runtime (needed for CocoaPods)
+      # Why: CocoaPods (iOS dependency manager) is written in Ruby
+      # Why: Fastlane (deployment tool) is written in Ruby
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true # Caches Ruby gems for faster builds
+
+      # ========================================================================
+      # STEP 5: Install CocoaPods Dependencies
+      # ========================================================================
+      # Installs iOS native dependencies (like react-native-track-player)
+      # Why: React Native bridges JavaScript to native iOS code
+      # Why: Third-party native modules need to be compiled for iOS
+      # Why: Creates .xcworkspace file that Xcode uses to build
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+        # What this does:
+        # - Reads ios/Podfile (list of dependencies)
+        # - Downloads pod source code
+        # - Compiles native Objective-C/Swift code
+        # - Links everything into Elmify.xcworkspace
+
+      # ========================================================================
+      # STEP 6: Setup Xcode
+      # ========================================================================
+      # Selects the correct Xcode version
+      # Why: Different Xcode versions support different iOS versions
+      # Why: Ensures consistent builds across all runs
+      - name: Setup Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_15.2.app
+        # Note: Check available Xcode versions for macos-14:
+        # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
+
+      # ========================================================================
+      # STEP 7: Restore Build Cache
+      # ========================================================================
+      # Caches compiled code to speed up future builds
+      # Why: Xcode recompiles everything by default (slow)
+      # Why: DerivedData contains compiled Swift/Objective-C code
+      # Why: Can reduce build time from 20 mins to 5 mins
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v3
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      # ========================================================================
+      # STEP 8: Configure Code Signing
+      # ========================================================================
+      # Sets up Apple certificates and provisioning profiles
+      # Why: Apple requires signed apps to install on devices
+      # Why: Different certificates for development vs. distribution
+      # Why: Provisioning profiles link your app ID to certificates
+      - name: Import Code Signing Certificates
+        env:
+          # Secrets are stored in: Repository Settings → Secrets and variables → Actions
+          CERTIFICATE_P12: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create temporary keychain (secure storage for certificates)
+          # Why: macOS requires certificates in keychain to sign apps
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+
+          # Import distribution certificate (proves you're an Apple Developer)
+          # Why: Apple won't accept unsigned apps
+          echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          # Install provisioning profile (allows app to run on devices)
+          # Why: Links your app bundle ID to your developer account
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+      # ========================================================================
+      # STEP 9: Build iOS App (Archive)
+      # ========================================================================
+      # Compiles your app into an .ipa file (iOS app package)
+      # Why: Xcode needs to compile Swift/Objective-C/JavaScript into machine code
+      # Why: Archive creates a distributable .ipa file for TestFlight/App Store
+      - name: Build & Archive
+        env:
+          # Environment variables from GitHub Secrets
+          # Why: Your app code reads process.env.EXPO_PUBLIC_*
+          # Why: Metro bundler injects these into the JavaScript bundle
+          EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+          EXPO_PUBLIC_MEDIA_BASE_URL: ${{ secrets.EXPO_PUBLIC_MEDIA_BASE_URL }}
+          EXPO_PUBLIC_STREAM_BASE_URL: ${{ secrets.EXPO_PUBLIC_STREAM_BASE_URL }}
+          EXPO_PUBLIC_MINIO_BASE_URL: ${{ secrets.EXPO_PUBLIC_MINIO_BASE_URL }}
+          EXPO_PUBLIC_DEBUG_API: ${{ secrets.EXPO_PUBLIC_DEBUG_API }}
+          EXPO_PUBLIC_ENVIRONMENT: ${{ secrets.EXPO_PUBLIC_ENVIRONMENT }}
+        run: |
+          # Build the app using xcodebuild command
+          # -workspace: Use the .xcworkspace (includes pods)
+          # -scheme: Which build scheme to use (usually your app name)
+          # -configuration: Release (optimized) vs Debug (development)
+          # -archivePath: Where to save the .xcarchive file
+          xcodebuild \
+            -workspace ios/Elmify.xcworkspace \
+            -scheme Elmify \
+            -configuration Release \
+            -archivePath ${{ github.workspace }}/build/Elmify.xcarchive \
+            -destination 'generic/platform=iOS' \
+            archive
+
+          # What happens during build:
+          # 1. Metro bundles JavaScript → main.jsbundle
+          # 2. Xcode compiles Swift/Objective-C → machine code
+          # 3. Links native modules (from pods)
+          # 4. Packages everything into .xcarchive
+
+      # ========================================================================
+      # STEP 10: Export IPA (App Package)
+      # ========================================================================
+      # Converts .xcarchive to .ipa file (installable app)
+      # Why: TestFlight and App Store require .ipa format
+      # Why: .ipa is a signed, compressed app package
+      - name: Export IPA
+        run: |
+          # Create export options plist (tells Xcode how to export)
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
+          </dict>
+          </plist>
+          EOF
+
+          # Export the archive to .ipa
+          xcodebuild \
+            -exportArchive \
+            -archivePath ${{ github.workspace }}/build/Elmify.xcarchive \
+            -exportPath ${{ github.workspace }}/build \
+            -exportOptionsPlist ExportOptions.plist
+
+      # ========================================================================
+      # STEP 11: Upload to TestFlight
+      # ========================================================================
+      # Sends your app to Apple for TestFlight distribution
+      # Why: TestFlight is Apple's beta testing platform
+      # Why: Allows internal/external testers to install your app
+      # Why: Required step before App Store submission
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # Save API key to file
+          echo "$APP_STORE_CONNECT_API_KEY" > AuthKey.p8
+
+          # Upload using xcrun altool (Apple's command-line tool)
+          # Why: Automates TestFlight upload without Xcode GUI
+          xcrun altool \
+            --upload-app \
+            --type ios \
+            --file "${{ github.workspace }}/build/Elmify.ipa" \
+            --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_API_ISSUER_ID"
+
+          # Alternative: Use Fastlane (more features)
+          # fastlane pilot upload --ipa build/Elmify.ipa
+
+      # ========================================================================
+      # STEP 12: Upload Build Artifacts
+      # ========================================================================
+      # Saves .ipa file to GitHub for download
+      # Why: Allows you to download and test the exact build that was deployed
+      # Why: Useful for debugging if TestFlight build has issues
+      # Why: Archives build artifacts for compliance/records
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: Elmify-${{ github.sha }}.ipa
+          path: ${{ github.workspace }}/build/Elmify.ipa
+          retention-days: 30 # Keep for 30 days
+
+      # ========================================================================
+      # STEP 13: Cleanup
+      # ========================================================================
+      # Removes sensitive files and temporary keychain
+      # Why: GitHub runners are reused, don't leave secrets behind
+      # Why: Good security practice
+      - name: Cleanup
+        if: always()
+        run: |
+          # Delete temporary keychain
+          security delete-keychain build.keychain || true
+
+          # Remove certificate files
+          rm -f certificate.p12 AuthKey.p8 ExportOptions.plist
+
+          # Remove provisioning profiles
+          rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+# ============================================================================
+# NOTIFICATIONS (Optional)
+# ============================================================================
+# Uncomment to get Slack/Discord/Email notifications on build status
+# - uses: 8398a7/action-slack@v3
+#   with:
+#     status: ${{ job.status }}
+#     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+#   if: always()
