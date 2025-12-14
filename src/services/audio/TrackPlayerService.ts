@@ -16,6 +16,7 @@ export type RepeatMode = "off" | "one" | "all";
  */
 export class TrackPlayerService {
   private static isSetup = false;
+  private static setupPromise: Promise<void> | null = null;
 
   /**
    * Ensure TrackPlayer is initialized before use
@@ -32,14 +33,22 @@ export class TrackPlayerService {
    * Setup track player with capabilities
    */
   static async setup(): Promise<void> {
+    // If already setup, return immediately
     if (this.isSetup) {
       return;
     }
 
-    try {
-      // Use default iOS AVPlayer settings - let iOS handle buffering automatically
-      // This matches Safari's behavior which plays smoothly
-      const bufferConfig = {
+    // If setup is in progress, wait for it to complete
+    if (this.setupPromise) {
+      return this.setupPromise;
+    }
+
+    // Create setup promise to prevent concurrent setup calls
+    this.setupPromise = (async () => {
+      try {
+        // Use default iOS AVPlayer settings - let iOS handle buffering automatically
+        // This matches Safari's behavior which plays smoothly
+        const bufferConfig = {
         autoUpdateMetadata: true,
         autoHandleInterruptions: true,
         // Optimized buffer configuration for fast start + smooth streaming
@@ -91,15 +100,21 @@ export class TrackPlayerService {
         progressUpdateEventInterval: 2,
       };
 
-      await TrackPlayer.updateOptions(options);
-      this.isSetup = true;
-    } catch (error) {
-      console.error(
-        "🎵 [TrackPlayerService] ❌❌❌ CRITICAL ERROR during setup:"
-      );
-      console.error("🎵 [TrackPlayerService] Error:", error);
-      throw error;
-    }
+        await TrackPlayer.updateOptions(options);
+        this.isSetup = true;
+      } catch (error) {
+        console.error(
+          "🎵 [TrackPlayerService] ❌❌❌ CRITICAL ERROR during setup:"
+        );
+        console.error("🎵 [TrackPlayerService] Error:", error);
+        this.setupPromise = null; // Reset on error so retry is possible
+        throw error;
+      } finally {
+        this.setupPromise = null; // Clear promise when done
+      }
+    })();
+
+    return this.setupPromise;
   }
 
   /**
