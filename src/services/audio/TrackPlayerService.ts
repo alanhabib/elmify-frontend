@@ -18,20 +18,21 @@ export class TrackPlayerService {
   private static isSetup = false;
 
   /**
+   * Ensure TrackPlayer is initialized before use
+   * Call this before any TrackPlayer operations
+   */
+  private static async ensureInitialized(): Promise<void> {
+    if (this.isSetup) {
+      return;
+    }
+    await this.setup();
+  }
+
+  /**
    * Setup track player with capabilities
    */
   static async setup(): Promise<void> {
     if (this.isSetup) {
-      // Already setup - but we need to stop any existing playback on app refresh
-      // The native player persists across JS reloads
-      try {
-        await TrackPlayer.reset();
-      } catch (error) {
-        console.error(
-          "🎵 [TrackPlayerService] ❌ Error resetting existing playback:",
-          error
-        );
-      }
       return;
     }
 
@@ -130,6 +131,7 @@ export class TrackPlayerService {
     lecture: UILecture,
     startPosition?: number
   ): Promise<void> {
+    await this.ensureInitialized();
     const track = this.lectureToTrack(lecture);
 
     try {
@@ -152,6 +154,7 @@ export class TrackPlayerService {
    * Play current track
    */
   static async play(): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.play();
   }
 
@@ -159,6 +162,7 @@ export class TrackPlayerService {
    * Pause current track
    */
   static async pause(): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.pause();
   }
 
@@ -166,6 +170,7 @@ export class TrackPlayerService {
    * Stop and reset player
    */
   static async stop(): Promise<void> {
+    await this.ensureInitialized();
     try {
       await TrackPlayer.reset();
     } catch (error) {
@@ -178,6 +183,7 @@ export class TrackPlayerService {
    * Seek to position in seconds
    */
   static async seekTo(seconds: number): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.seekTo(seconds);
   }
 
@@ -185,6 +191,7 @@ export class TrackPlayerService {
    * Set playback speed
    */
   static async setRate(rate: number): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.setRate(rate);
   }
 
@@ -192,6 +199,7 @@ export class TrackPlayerService {
    * Add tracks to queue
    */
   static async addToQueue(lectures: UILecture[]): Promise<void> {
+    await this.ensureInitialized();
     const tracks = lectures.map(this.lectureToTrack);
     await TrackPlayer.add(tracks);
   }
@@ -200,6 +208,7 @@ export class TrackPlayerService {
    * Skip to next track
    */
   static async skipToNext(): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.skipToNext();
   }
 
@@ -207,6 +216,7 @@ export class TrackPlayerService {
    * Skip to previous track
    */
   static async skipToPrevious(): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.skipToPrevious();
   }
 
@@ -214,6 +224,7 @@ export class TrackPlayerService {
    * Set repeat mode
    */
   static async setRepeatMode(mode: RepeatMode): Promise<void> {
+    await this.ensureInitialized();
     const tpMode = {
       off: TPRepeatMode.Off,
       one: TPRepeatMode.Track,
@@ -227,6 +238,7 @@ export class TrackPlayerService {
    * Get current position in seconds
    */
   static async getPosition(): Promise<number> {
+    await this.ensureInitialized();
     return await TrackPlayer.getPosition();
   }
 
@@ -234,6 +246,7 @@ export class TrackPlayerService {
    * Get duration in seconds
    */
   static async getDuration(): Promise<number> {
+    await this.ensureInitialized();
     return await TrackPlayer.getDuration();
   }
 
@@ -241,6 +254,7 @@ export class TrackPlayerService {
    * Get current state
    */
   static async getState(): Promise<State> {
+    await this.ensureInitialized();
     return await TrackPlayer.getState();
   }
 
@@ -248,6 +262,7 @@ export class TrackPlayerService {
    * Check if playing
    */
   static async isPlaying(): Promise<boolean> {
+    await this.ensureInitialized();
     const state = await this.getState();
     return state === State.Playing || state === State.Buffering;
   }
@@ -256,6 +271,7 @@ export class TrackPlayerService {
    * Update now playing metadata
    */
   static async updateNowPlaying(lecture: UILecture): Promise<void> {
+    await this.ensureInitialized();
     const activeTrackIndex = await TrackPlayer.getActiveTrackIndex();
     if (activeTrackIndex === undefined) return;
 
@@ -295,6 +311,7 @@ export class TrackPlayerService {
    * Destroy player
    */
   static async destroy(): Promise<void> {
+    await this.ensureInitialized();
     await TrackPlayer.stop();
     this.isSetup = false;
   }

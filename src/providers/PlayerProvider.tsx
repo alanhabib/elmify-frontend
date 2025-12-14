@@ -362,6 +362,9 @@ export default function PlayerProvider({ children }: PropsWithChildren) {
       setError(null);
 
       try {
+        // CRITICAL: Initialize TrackPlayer before any operations
+        await TrackPlayerService.setup();
+
         // Store collection ID and lectures
         collectionIdRef.current = collectionId;
         setQueue(lectures);

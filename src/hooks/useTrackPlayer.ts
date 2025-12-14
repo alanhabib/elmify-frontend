@@ -11,17 +11,9 @@ export function useTrackPlayer() {
   const [isLoading, setIsLoading] = useState(false);
   const progress = useProgress();
 
-  // Setup track player on mount
-  useEffect(() => {
-    const setup = async () => {
-      try {
-        await TrackPlayerService.setup();
-      } catch (error) {
-        console.error('Failed to setup track player:', error);
-      }
-    };
-    setup();
-  }, []);
+  // DON'T setup on mount - let it initialize lazily when first used
+  // This prevents TurboModule crashes during app startup
+  // TrackPlayer.setupPlayer() will be called in TrackPlayerService when needed
 
   // Listen to playback state changes
   useTrackPlayerEvents([Event.PlaybackState], async (event) => {

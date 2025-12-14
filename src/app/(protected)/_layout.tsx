@@ -4,12 +4,9 @@ import { ActivityIndicator, View } from "react-native";
 import { useState, useEffect } from "react";
 import FloatingPlayer from "@/components/FloatingPlayer";
 import { guestModeManager } from "@/store/guestMode";
-import { useAuthManager } from "@/hooks/auth/useAuthManager";
 
 export default function ProtectedLayout() {
   const { isSignedIn, isLoaded } = useAuth();
-  // Initialize AuthManager with Clerk hooks
-  useAuthManager();
   const [isGuest, setIsGuest] = useState(false);
   const [guestInitialized, setGuestInitialized] = useState(false);
 
