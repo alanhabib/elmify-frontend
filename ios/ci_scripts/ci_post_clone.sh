@@ -12,7 +12,10 @@
 #
 
 set -e  # Exit on any error
-set -u  # Exit on undefined variables
+
+# Detect project root (script is in ios/ci_scripts/, project root is 2 levels up)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # ============================================================================
 # Configuration
@@ -129,8 +132,8 @@ install_npm_dependencies() {
   log_section "📦 Installing npm Dependencies"
 
   # Navigate to project root
-  cd "$CI_WORKSPACE" || {
-    log_error "Failed to navigate to CI_WORKSPACE: $CI_WORKSPACE"
+  cd "$PROJECT_ROOT" || {
+    log_error "Failed to navigate to project root: $PROJECT_ROOT"
     exit 1
   }
 
@@ -158,7 +161,7 @@ install_cocoapods() {
   log_section "🍫 Installing CocoaPods Dependencies"
 
   # Navigate to iOS directory
-  cd "$CI_WORKSPACE/ios" || {
+  cd "$PROJECT_ROOT/ios" || {
     log_error "Failed to navigate to iOS directory"
     exit 1
   }
@@ -221,7 +224,7 @@ install_cocoapods() {
 cleanup_caches() {
   log_section "🧹 Cleaning Caches"
 
-  cd "$CI_WORKSPACE" || exit 1
+  cd "$PROJECT_ROOT" || exit 1
 
   # Clean Metro bundler cache
   if [ -d "node_modules/.cache" ]; then
@@ -245,7 +248,7 @@ cleanup_caches() {
 verify_setup() {
   log_section "✓ Verifying Setup"
 
-  cd "$CI_WORKSPACE" || exit 1
+  cd "$PROJECT_ROOT" || exit 1
 
   local errors=0
 
@@ -301,7 +304,7 @@ print_summary() {
 
 main() {
   log_section "🚀 Xcode Cloud CI - Post Clone Setup"
-  log_info "Repository: ${CI_WORKSPACE}"
+  log_info "Repository: ${PROJECT_ROOT}"
   log_info "Branch: ${CI_BRANCH:-unknown}"
   log_info "Commit: ${CI_COMMIT:-unknown}"
 
