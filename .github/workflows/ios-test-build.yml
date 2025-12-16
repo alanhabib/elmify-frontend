@@ -21,7 +21,7 @@ name: iOS Test Build (No Deployment)
 on:
   push:
     branches:
-      - test-build # Only runs on test-build branch
+      - main # Only runs on test-build branch
   workflow_dispatch: # Or trigger manually
 
 jobs:
@@ -44,8 +44,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       # ========================================================================
       # STEP 3: Install npm Dependencies
@@ -59,7 +59,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.2"
           bundler-cache: true
 
       # ========================================================================

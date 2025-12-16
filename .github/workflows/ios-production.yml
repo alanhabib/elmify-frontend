@@ -10,7 +10,7 @@ name: iOS Production Build & Deploy
 on:
   push:
     branches:
-      - main
+      - none # active this later
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 # ============================================================================
@@ -50,8 +50,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Match your local development version
-          cache: 'npm' # Caches node_modules to speed up future builds
+          node-version: "20" # Match your local development version
+          cache: "npm" # Caches node_modules to speed up future builds
 
       # ========================================================================
       # STEP 3: Install JavaScript Dependencies
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: "3.2"
           bundler-cache: true # Caches Ruby gems for faster builds
 
       # ========================================================================
