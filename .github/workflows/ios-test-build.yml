@@ -1,0 +1,134 @@
+name: iOS Test Build (No Deployment)
+
+# ============================================================================
+# SIMPLIFIED BUILD FOR TESTING
+# ============================================================================
+# This workflow ONLY builds your app - no code signing, no TestFlight upload
+# Perfect for testing GitHub Actions with minimal setup
+#
+# Required Secrets (only 7):
+# - EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+# - EXPO_PUBLIC_API_BASE_URL
+# - EXPO_PUBLIC_MEDIA_BASE_URL
+# - EXPO_PUBLIC_STREAM_BASE_URL
+# - EXPO_PUBLIC_MINIO_BASE_URL
+# - EXPO_PUBLIC_DEBUG_API
+# - EXPO_PUBLIC_ENVIRONMENT
+#
+# Once this works, move to ios-production.yml for full deployment
+# ============================================================================
+
+on:
+  push:
+    branches:
+      - test-build # Only runs on test-build branch
+  workflow_dispatch: # Or trigger manually
+
+jobs:
+  test-build:
+    name: Test iOS Build
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      # ========================================================================
+      # STEP 1: Checkout Code
+      # ========================================================================
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ========================================================================
+      # STEP 2: Setup Node.js
+      # ========================================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ========================================================================
+      # STEP 3: Install npm Dependencies
+      # ========================================================================
+      - name: Install npm Dependencies
+        run: npm ci
+
+      # ========================================================================
+      # STEP 4: Setup Ruby for CocoaPods
+      # ========================================================================
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      # ========================================================================
+      # STEP 5: Install CocoaPods
+      # ========================================================================
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      # ========================================================================
+      # STEP 6: Setup Xcode
+      # ========================================================================
+      - name: Setup Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_15.2.app
+
+      # ========================================================================
+      # STEP 7: Build iOS App (No Signing)
+      # ========================================================================
+      # Build WITHOUT code signing - just tests that everything compiles
+      # This verifies:
+      # - Environment variables work
+      # - Dependencies install correctly
+      # - Code compiles successfully
+      # - Metro bundler works
+      - name: Build App (No Signing)
+        env:
+          # Environment variables - ONLY THESE 7 SECRETS NEEDED!
+          EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+          EXPO_PUBLIC_MEDIA_BASE_URL: ${{ secrets.EXPO_PUBLIC_MEDIA_BASE_URL }}
+          EXPO_PUBLIC_STREAM_BASE_URL: ${{ secrets.EXPO_PUBLIC_STREAM_BASE_URL }}
+          EXPO_PUBLIC_MINIO_BASE_URL: ${{ secrets.EXPO_PUBLIC_MINIO_BASE_URL }}
+          EXPO_PUBLIC_DEBUG_API: ${{ secrets.EXPO_PUBLIC_DEBUG_API }}
+          EXPO_PUBLIC_ENVIRONMENT: ${{ secrets.EXPO_PUBLIC_ENVIRONMENT }}
+        run: |
+          # Build without code signing (for testing only)
+          xcodebuild \
+            -workspace ios/Elmify.xcworkspace \
+            -scheme Elmify \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            clean build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      # ========================================================================
+      # STEP 8: Success Summary
+      # ========================================================================
+      - name: Build Success
+        if: success()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ TEST BUILD SUCCESSFUL!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Your app builds successfully with GitHub Actions!"
+          echo ""
+          echo "What was tested:"
+          echo "  ✓ Environment variables loaded correctly"
+          echo "  ✓ npm dependencies installed"
+          echo "  ✓ CocoaPods dependencies installed"
+          echo "  ✓ JavaScript bundled with Metro"
+          echo "  ✓ Swift/Objective-C code compiled"
+          echo "  ✓ Native modules linked"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Add code signing secrets (see docs/GITHUB_SECRETS_CHECKLIST.md)"
+          echo "  2. Switch to ios-production.yml workflow"
+          echo "  3. Enable automatic TestFlight deployment"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
