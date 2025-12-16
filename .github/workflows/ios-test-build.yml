@@ -29,6 +29,7 @@ jobs:
     name: Test iOS Build
     runs-on: macos-14
     timeout-minutes: 60
+    environment: test # Use secrets from "test" environment
 
     steps:
       # ========================================================================
