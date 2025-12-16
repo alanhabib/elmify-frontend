@@ -23,7 +23,7 @@ jobs:
     # IMPORTANT: iOS apps must be built on macOS runners
     # Why: Xcode and iOS SDK are only available on macOS
     # Cost: macOS runners use 10x minutes (e.g., 10 mins = 100 mins from quota)
-    runs-on: macos-14 # Latest stable macOS with Xcode 15+
+    runs-on: macos-15 # Latest macOS with Xcode 16+
 
     # Increase timeout for long builds (default is 360 mins)
     # Why: iOS builds with pods can take 15-30 minutes
@@ -103,10 +103,11 @@ jobs:
       # Selects the correct Xcode version
       # Why: Different Xcode versions support different iOS versions
       # Why: Ensures consistent builds across all runs
+      # Why: React Native requires Xcode 16.1+
       - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_15.2.app
-        # Note: Check available Xcode versions for macos-14:
-        # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
+        run: sudo xcode-select --switch /Applications/Xcode_16.1.app
+        # Note: Check available Xcode versions for macos-15:
+        # https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
 
       # ========================================================================
       # STEP 7: Restore Build Cache

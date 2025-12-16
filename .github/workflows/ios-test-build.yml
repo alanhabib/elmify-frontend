@@ -27,7 +27,7 @@ on:
 jobs:
   test-build:
     name: Test iOS Build
-    runs-on: macos-14
+    runs-on: macos-15 # Latest macOS with Xcode 16+
     timeout-minutes: 60
     environment: test # Use secrets from "test" environment
 
@@ -73,8 +73,10 @@ jobs:
       # ========================================================================
       # STEP 6: Setup Xcode
       # ========================================================================
+      # Uses Xcode 16.1+ which is required by React Native
+      # macOS-15 runners come with Xcode 16.1 as default
       - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_15.2.app
+        run: sudo xcode-select --switch /Applications/Xcode_16.1.app
 
       # ========================================================================
       # STEP 7: Build iOS App (No Signing)
