@@ -29,6 +29,9 @@ jobs:
     # Why: iOS builds with pods can take 15-30 minutes
     timeout-minutes: 60
 
+    # Use secrets from "test" environment
+    environment: test
+
     steps:
       # ========================================================================
       # STEP 1: Checkout Code
