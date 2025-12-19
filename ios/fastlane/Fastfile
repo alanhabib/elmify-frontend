@@ -1,0 +1,46 @@
+# Fastfile for Elmify iOS CI/CD
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    # Setup code signing
+    setup_ci
+
+    # Import certificate
+    import_certificate(
+      certificate_path: "certificate.p12",
+      certificate_password: ENV["IOS_CERTIFICATE_PASSWORD"],
+      keychain_name: "build.keychain",
+      keychain_password: ENV["KEYCHAIN_PASSWORD"]
+    )
+
+    # Install provisioning profile
+    install_provisioning_profile(
+      path: "profile.mobileprovision"
+    )
+
+    # Build the app
+    gym(
+      workspace: "Elmify.xcworkspace",
+      scheme: "Elmify",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.elmify.app" => "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z"
+        }
+      },
+      output_directory: "../build",
+      output_name: "Elmify.ipa"
+    )
+
+    # Upload to TestFlight
+    pilot(
+      api_key_path: "AuthKey.p8",
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
+  end
+end
