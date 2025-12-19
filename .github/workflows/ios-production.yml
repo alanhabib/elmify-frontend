@@ -157,8 +157,9 @@ jobs:
 
           # Install provisioning profile (allows app to run on devices)
           # Why: Links your app bundle ID to your developer account
+          # IMPORTANT: Profile must be saved with its UUID as filename for Xcode to recognize it
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+          echo "$PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/aacc4eef-7224-4efe-9b41-dfad1842b239.mobileprovision
 
       # ========================================================================
       # STEP 9: Build iOS App (Archive)
