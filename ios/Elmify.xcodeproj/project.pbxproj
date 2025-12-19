@@ -356,7 +356,6 @@
 				INFOPLIST_FILE = Elmify/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
-				PROVISIONING_PROFILE_SPECIFIER = "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -389,7 +388,6 @@
 				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = RJ59PXFA29;
 				INFOPLIST_FILE = Elmify/Info.plist;
-				PROVISIONING_PROFILE_SPECIFIER = "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
