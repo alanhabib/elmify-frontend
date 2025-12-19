@@ -21,7 +21,7 @@ name: iOS Test Build (No Deployment)
 on:
   push:
     branches:
-      - main # Only runs on test-build branch
+      - test # Only runs on test-build branch
   workflow_dispatch: # Or trigger manually
 
 jobs:

@@ -10,7 +10,7 @@ name: iOS Production Build & Deploy
 on:
   push:
     branches:
-      - none # active this later
+      - main # active this later
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 # ============================================================================
