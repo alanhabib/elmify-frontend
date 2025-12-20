@@ -93,10 +93,21 @@ jobs:
       - name: Install CocoaPods
         run: |
           cd ios
-          pod install
+          # Retry pod install up to 3 times to handle transient network issues
+          for i in 1 2 3; do
+            echo "Attempt $i of 3..."
+            pod install && break || {
+              if [ $i -eq 3 ]; then
+                echo "❌ pod install failed after 3 attempts"
+                exit 1
+              fi
+              echo "⚠️  pod install failed, retrying in 10 seconds..."
+              sleep 10
+            }
+          done
         # What this does:
         # - Reads ios/Podfile (list of dependencies)
-        # - Downloads pod source code
+        # - Downloads pod source code (with retry for network failures)
         # - Compiles native Objective-C/Swift code
         # - Links everything into Elmify.xcworkspace
 
