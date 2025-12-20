@@ -21,14 +21,14 @@ platform :ios do
     )
 
     # Build the app
-    # Use 'iphoneos' to auto-detect latest available iOS SDK
-    # Runner has iphoneos18.1 installed (confirmed by debug output)
+    # Removed 'sdk' parameter to let xcodebuild auto-detect
+    # This avoids destination matching issues on GitHub Actions
     gym(
       workspace: "Elmify.xcworkspace",
       scheme: "Elmify",
       configuration: "Release",
-      sdk: "iphoneos",
       export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
       export_options: {
         provisioningProfiles: {
           "com.elmify.app" => "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z"
