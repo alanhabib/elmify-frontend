@@ -128,7 +128,52 @@ jobs:
             ${{ runner.os }}-deriveddata-
 
       # ========================================================================
-      # STEP 8: Prepare Code Signing Files
+      # STEP 8: Verify Secrets
+      # ========================================================================
+      # Check that all required secrets are present (without exposing values)
+      - name: Verify Secrets
+        env:
+          CERTIFICATE_P12: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          echo "Checking required secrets..."
+
+          # Check each secret is set (show length, not value)
+          if [ -z "$CERTIFICATE_P12" ]; then echo "❌ IOS_DISTRIBUTION_CERTIFICATE_P12 is empty"; exit 1; fi
+          echo "✅ IOS_DISTRIBUTION_CERTIFICATE_P12 (length: ${#CERTIFICATE_P12} chars)"
+
+          if [ -z "$CERTIFICATE_PASSWORD" ]; then echo "❌ IOS_CERTIFICATE_PASSWORD is empty"; exit 1; fi
+          echo "✅ IOS_CERTIFICATE_PASSWORD (length: ${#CERTIFICATE_PASSWORD} chars)"
+
+          if [ -z "$PROVISIONING_PROFILE" ]; then echo "❌ IOS_PROVISIONING_PROFILE is empty"; exit 1; fi
+          echo "✅ IOS_PROVISIONING_PROFILE (length: ${#PROVISIONING_PROFILE} chars)"
+
+          if [ -z "$KEYCHAIN_PASSWORD" ]; then echo "❌ KEYCHAIN_PASSWORD is empty"; exit 1; fi
+          echo "✅ KEYCHAIN_PASSWORD (length: ${#KEYCHAIN_PASSWORD} chars)"
+
+          if [ -z "$APPLE_TEAM_ID" ]; then echo "❌ APPLE_TEAM_ID is empty"; exit 1; fi
+          echo "✅ APPLE_TEAM_ID: $APPLE_TEAM_ID"
+
+          if [ -z "$API_KEY_ID" ]; then echo "❌ APP_STORE_CONNECT_API_KEY_ID is empty"; exit 1; fi
+          echo "✅ APP_STORE_CONNECT_API_KEY_ID: $API_KEY_ID"
+
+          if [ -z "$API_ISSUER_ID" ]; then echo "❌ APP_STORE_CONNECT_API_ISSUER_ID is empty"; exit 1; fi
+          echo "✅ APP_STORE_CONNECT_API_ISSUER_ID: $API_ISSUER_ID"
+
+          if [ -z "$API_KEY" ]; then echo "❌ APP_STORE_CONNECT_API_KEY is empty"; exit 1; fi
+          echo "✅ APP_STORE_CONNECT_API_KEY (length: ${#API_KEY} chars)"
+
+          echo ""
+          echo "All secrets verified ✅"
+
+      # ========================================================================
+      # STEP 9: Prepare Code Signing Files
       # ========================================================================
       # Decode certificate and provisioning profile for Fastlane
       - name: Prepare Code Signing Files
@@ -138,9 +183,24 @@ jobs:
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
         run: |
           cd ios
+
+          # Decode and verify certificate
           echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
+          if [ ! -f certificate.p12 ]; then echo "❌ Failed to create certificate.p12"; exit 1; fi
+          echo "✅ certificate.p12 created ($(wc -c < certificate.p12) bytes)"
+
+          # Decode and verify provisioning profile
           echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+          if [ ! -f profile.mobileprovision ]; then echo "❌ Failed to create profile.mobileprovision"; exit 1; fi
+          echo "✅ profile.mobileprovision created ($(wc -c < profile.mobileprovision) bytes)"
+
+          # Verify profile bundle ID
+          /usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' /dev/stdin <<< $(security cms -D -i profile.mobileprovision) | grep -q "com.elmify.app" && echo "✅ Profile bundle ID matches: com.elmify.app" || echo "⚠️  Profile bundle ID mismatch"
+
+          # Create API key file
           echo "$APP_STORE_CONNECT_API_KEY" > AuthKey.p8
+          if [ ! -f AuthKey.p8 ]; then echo "❌ Failed to create AuthKey.p8"; exit 1; fi
+          echo "✅ AuthKey.p8 created ($(wc -c < AuthKey.p8) bytes)"
 
       # ========================================================================
       # STEP 9: Install Fastlane
