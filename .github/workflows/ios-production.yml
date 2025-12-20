@@ -137,7 +137,7 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
@@ -229,7 +229,7 @@ jobs:
           # Code signing secrets
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: |
           cd ios
           fastlane beta
