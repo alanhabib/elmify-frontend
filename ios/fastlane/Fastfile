@@ -21,14 +21,13 @@ platform :ios do
     )
 
     # Build the app
-    # Removed 'sdk' parameter to let xcodebuild auto-detect
-    # This avoids destination matching issues on GitHub Actions
+    # Force Xcode to use the provisioning profile we installed
     gym(
       workspace: "Elmify.xcworkspace",
       scheme: "Elmify",
       configuration: "Release",
       export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: "-allowProvisioningUpdates PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'",
       export_options: {
         provisioningProfiles: {
           "com.elmify.app" => "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z"
