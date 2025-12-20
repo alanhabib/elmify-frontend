@@ -205,8 +205,32 @@ jobs:
           if [ ! -f profile.mobileprovision ]; then echo "❌ Failed to create profile.mobileprovision"; exit 1; fi
           echo "✅ profile.mobileprovision created ($(wc -c < profile.mobileprovision) bytes)"
 
-          # Verify profile bundle ID
-          /usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' /dev/stdin <<< $(security cms -D -i profile.mobileprovision) | grep -q "com.elmify.app" && echo "✅ Profile bundle ID matches: com.elmify.app" || echo "⚠️  Profile bundle ID mismatch"
+          # Verify profile bundle ID and capabilities
+          echo "Verifying provisioning profile..."
+          PROFILE_DATA=$(security cms -D -i profile.mobileprovision)
+
+          # Check bundle ID
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' /dev/stdin <<< "$PROFILE_DATA")
+          echo "Bundle ID: $BUNDLE_ID"
+          echo "$BUNDLE_ID" | grep -q "com.elmify.app" && echo "✅ Bundle ID matches" || echo "❌ Bundle ID mismatch!"
+
+          # Check Sign in with Apple capability
+          SIGN_IN_APPLE=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.applesignin' /dev/stdin <<< "$PROFILE_DATA" 2>&1 || echo "NOT_FOUND")
+          if [ "$SIGN_IN_APPLE" != "NOT_FOUND" ]; then
+            echo "✅ Sign in with Apple capability: $SIGN_IN_APPLE"
+          else
+            echo "❌ Sign in with Apple capability NOT FOUND in profile!"
+            echo "This profile does not have Sign in with Apple enabled."
+            exit 1
+          fi
+
+          # Check profile name
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin <<< "$PROFILE_DATA")
+          echo "Profile Name: $PROFILE_NAME"
+
+          # Check expiration date
+          EXPIRATION=$(/usr/libexec/PlistBuddy -c 'Print :ExpirationDate' /dev/stdin <<< "$PROFILE_DATA")
+          echo "Expires: $EXPIRATION"
 
           # Create API key file
           echo "$APP_STORE_CONNECT_API_KEY" > AuthKey.p8
