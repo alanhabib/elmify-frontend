@@ -211,6 +211,20 @@ jobs:
           gem install fastlane
 
       # ========================================================================
+      # STEP 9.5: Debug - List Available SDKs
+      # ========================================================================
+      - name: List Available iOS SDKs
+        run: |
+          echo "Available Xcode SDKs:"
+          xcodebuild -showsdks
+          echo ""
+          echo "Xcode version:"
+          xcodebuild -version
+          echo ""
+          echo "Available iOS platforms:"
+          ls -la /Applications/Xcode_16.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/
+
+      # ========================================================================
       # STEP 10: Build & Upload with Fastlane
       # ========================================================================
       # Fastlane handles code signing, building, and uploading automatically
