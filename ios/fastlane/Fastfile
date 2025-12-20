@@ -25,6 +25,7 @@ platform :ios do
       workspace: "Elmify.xcworkspace",
       scheme: "Elmify",
       configuration: "Release",
+      sdk: "iphoneos",
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
