@@ -260,6 +260,17 @@ jobs:
           ls -la /Applications/Xcode_16.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/
 
       # ========================================================================
+      # STEP 9.6: Download iOS Platform
+      # ========================================================================
+      # Fix for "iOS 18.1 is not installed" destination error
+      # The SDK exists but the platform/runtime needs to be downloaded
+      - name: Download iOS 18.1 Platform
+        run: |
+          echo "Downloading iOS 18.1 platform..."
+          sudo xcodebuild -downloadPlatform iOS
+          echo "✅ iOS platform download completed"
+
+      # ========================================================================
       # STEP 10: Build & Upload with Fastlane
       # ========================================================================
       # Fastlane handles code signing, building, and uploading automatically
