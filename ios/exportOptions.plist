@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store</string>
+    <key>teamID</key>
+    <string>RJ59PXFA29</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.elmify.app</key>
+        <string>[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z</string>
+    </dict>
+    <key>signingCertificate</key>
+    <string>Apple Distribution</string>
+    <key>signingStyle</key>
+    <string>manual</string>
+</dict>
+</plist>

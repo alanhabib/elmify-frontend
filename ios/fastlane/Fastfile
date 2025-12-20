@@ -20,22 +20,26 @@ platform :ios do
       path: "profile.mobileprovision"
     )
 
-    # Build the app
-    # Force Xcode to use the provisioning profile we installed
-    gym(
-      workspace: "Elmify.xcworkspace",
-      scheme: "Elmify",
-      configuration: "Release",
-      export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'",
-      export_options: {
-        provisioningProfiles: {
-          "com.elmify.app" => "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z"
-        }
-      },
-      output_directory: "../build",
-      output_name: "Elmify.ipa"
-    )
+    # Build the app using xcodebuild directly (skip gym's destination issues)
+    archive_path = "../build/Elmify.xcarchive"
+
+    # Archive the app
+    sh("xcodebuild archive " \
+       "-workspace Elmify.xcworkspace " \
+       "-scheme Elmify " \
+       "-configuration Release " \
+       "-archivePath #{archive_path} " \
+       "-allowProvisioningUpdates " \
+       "PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'")
+
+    # Export the IPA
+    sh("xcodebuild -exportArchive " \
+       "-archivePath #{archive_path} " \
+       "-exportPath ../build " \
+       "-exportOptionsPlist exportOptions.plist")
+
+    # Rename to expected output name
+    sh("mv ../build/Elmify.ipa ../build/Elmify.ipa 2>/dev/null || true")
 
     # Upload to TestFlight
     pilot(
