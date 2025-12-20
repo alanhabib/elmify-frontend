@@ -9,11 +9,10 @@ platform :ios do
     setup_ci
 
     # Import certificate
+    # setup_ci creates fastlane_tmp_keychain automatically, so we don't specify keychain_name
     import_certificate(
       certificate_path: "certificate.p12",
-      certificate_password: ENV["IOS_CERTIFICATE_PASSWORD"],
-      keychain_name: "build.keychain",
-      keychain_password: ENV["KEYCHAIN_PASSWORD"]
+      certificate_password: ENV["IOS_CERTIFICATE_PASSWORD"]
     )
 
     # Install provisioning profile
