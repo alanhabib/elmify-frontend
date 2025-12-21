@@ -20,30 +20,29 @@ platform :ios do
       path: "profile.mobileprovision"
     )
 
-    # Build the app using xcodebuild directly (skip gym's destination issues)
-    archive_path = "#{Dir.pwd}/../build/Elmify.xcarchive"
-    export_path = "#{Dir.pwd}/../build"
-
-    # Archive the app (run from ios directory, not fastlane directory)
-    Dir.chdir("..") do
-      sh("xcodebuild archive " \
-         "-workspace Elmify.xcworkspace " \
-         "-scheme Elmify " \
-         "-configuration Release " \
-         "-archivePath #{archive_path} " \
-         "-allowProvisioningUpdates " \
-         "PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'")
-
-      # Export the IPA
-      sh("xcodebuild -exportArchive " \
-         "-archivePath #{archive_path} " \
-         "-exportPath #{export_path} " \
-         "-exportOptionsPlist exportOptions.plist")
-    end
+    # Build and export the app using gym (best practice)
+    # Use build_app which is an alias for gym
+    build_app(
+      workspace: "Elmify.xcworkspace",
+      scheme: "Elmify",
+      configuration: "Release",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build",
+      output_name: "Elmify.ipa",
+      export_options: {
+        provisioningProfiles: {
+          "com.elmify.app" => "[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z"
+        },
+        signingStyle: "manual",
+        teamID: ENV["APPLE_TEAM_ID"]
+      }
+    )
 
     # Upload to TestFlight
     pilot(
       api_key_path: "AuthKey.p8",
+      ipa: "./build/Elmify.ipa",
       skip_waiting_for_build_processing: true,
       skip_submission: true
     )
