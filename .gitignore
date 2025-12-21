@@ -77,6 +77,9 @@ web-build/
 .env.test.local
 .env.production.local
 
+# Credentials (contains sensitive passwords/certificates)
+credentials.json
+
 # TypeScript
 *.tsbuildinfo
 
