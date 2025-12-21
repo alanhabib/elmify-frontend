@@ -43,7 +43,10 @@
       "ios": {
         "appleId": "your-apple-id@example.com",
         "ascAppId": "1234567890",
-        "appleTeamId": "XXXXXXXXXX"
+        "appleTeamId": "RJ59PXFA29",
+        "ascApiKeyPath": "./AuthKey.p8",
+        "ascApiKeyIssuerId": "$APP_STORE_CONNECT_API_ISSUER_ID",
+        "ascApiKeyId": "$APP_STORE_CONNECT_API_KEY_ID"
       }
     }
   }

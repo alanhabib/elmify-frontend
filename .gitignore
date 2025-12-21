@@ -79,6 +79,8 @@ web-build/
 
 # Credentials (contains sensitive passwords/certificates)
 credentials.json
+credentials/
+eas-credentials/
 
 # TypeScript
 *.tsbuildinfo
