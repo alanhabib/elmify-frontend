@@ -1,273 +1,40 @@
 name: iOS Production Build & Deploy
 
-# ============================================================================
-# WHEN THIS RUNS
-# ============================================================================
-# This workflow automatically builds and deploys your iOS app when:
-# - Code is pushed to the 'main' branch
-# - A pull request is merged to 'main'
-# You can also trigger it manually from the Actions tab
 on:
   push:
     branches:
-      - main # active this later
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+      - main # activate this later
+  workflow_dispatch:
 
-# ============================================================================
-# WORKFLOW CONFIGURATION
-# ============================================================================
 jobs:
   build-ios:
     name: Build & Deploy iOS App
-
-    # IMPORTANT: iOS apps must be built on macOS runners
-    # Why: Xcode and iOS SDK are only available on macOS
-    # Cost: macOS runners use 10x minutes (e.g., 10 mins = 100 mins from quota)
-    runs-on: macos-15 # Latest macOS with Xcode 16+
-
-    # Increase timeout for long builds (default is 360 mins)
-    # Why: iOS builds with pods can take 15-30 minutes
+    runs-on: macos-latest
     timeout-minutes: 60
-
-    # Use secrets from "test" environment
     environment: test
 
     steps:
-      # ========================================================================
-      # STEP 1: Checkout Code
-      # ========================================================================
-      # Downloads your repository code to the runner
-      # Why: GitHub Actions runners start empty, need your code to build
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Full git history (needed for versioning)
 
-      # ========================================================================
-      # STEP 2: Setup Node.js
-      # ========================================================================
-      # Installs Node.js runtime environment
-      # Why: Your app uses React Native/Expo which requires Node.js
-      # Why: Metro bundler (JavaScript bundler) runs on Node.js
-      # Why: npm/npx commands need Node.js to run
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20" # Match your local development version
-          cache: "npm" # Caches node_modules to speed up future builds
+          node-version: "20"
+          cache: "npm"
 
-      # ========================================================================
-      # STEP 3: Install JavaScript Dependencies
-      # ========================================================================
-      # Installs all packages from package.json (React Native, Expo, etc.)
-      # Why: Your app code imports these libraries
-      # Why: Metro bundler needs these to create the JavaScript bundle
-      # Uses 'npm ci' instead of 'npm install' for reproducible builds
-      - name: Install npm Dependencies
+      - name: Install Dependencies
         run: npm ci
-        # Why 'npm ci':
-        # - Deletes node_modules and does fresh install
-        # - Uses exact versions from package-lock.json
-        # - Faster and more reliable in CI environments
-        # - Fails if package.json and package-lock.json are out of sync
 
-      # ========================================================================
-      # STEP 4: Setup Ruby
-      # ========================================================================
-      # Installs Ruby runtime (needed for CocoaPods)
-      # Why: CocoaPods (iOS dependency manager) is written in Ruby
-      # Why: Fastlane (deployment tool) is written in Ruby
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
         with:
-          ruby-version: "3.2"
-          bundler-cache: true # Caches Ruby gems for faster builds
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      # ========================================================================
-      # STEP 5: Install CocoaPods Dependencies
-      # ========================================================================
-      # Installs iOS native dependencies (like react-native-track-player)
-      # Why: React Native bridges JavaScript to native iOS code
-      # Why: Third-party native modules need to be compiled for iOS
-      # Why: Creates .xcworkspace file that Xcode uses to build
-      - name: Install CocoaPods
-        run: |
-          cd ios
-          # Retry pod install up to 3 times to handle transient network issues
-          for i in 1 2 3; do
-            echo "Attempt $i of 3..."
-            pod install && break || {
-              if [ $i -eq 3 ]; then
-                echo "❌ pod install failed after 3 attempts"
-                exit 1
-              fi
-              echo "⚠️  pod install failed, retrying in 10 seconds..."
-              sleep 10
-            }
-          done
-        # What this does:
-        # - Reads ios/Podfile (list of dependencies)
-        # - Downloads pod source code (with retry for network failures)
-        # - Compiles native Objective-C/Swift code
-        # - Links everything into Elmify.xcworkspace
-
-      # ========================================================================
-      # STEP 6: Setup Xcode
-      # ========================================================================
-      # Selects the correct Xcode version
-      # Why: Different Xcode versions support different iOS versions
-      # Why: Ensures consistent builds across all runs
-      # Why: React Native requires Xcode 16.1+
-      - name: Setup Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_16.1.app
-        # Note: Check available Xcode versions for macos-15:
-        # https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
-
-      # ========================================================================
-      # STEP 7: Restore Build Cache
-      # ========================================================================
-      # Caches compiled code to speed up future builds
-      # Why: Xcode recompiles everything by default (slow)
-      # Why: DerivedData contains compiled Swift/Objective-C code
-      # Why: Can reduce build time from 20 mins to 5 mins
-      - name: Cache Xcode DerivedData
-        uses: actions/cache@v3
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
-
-      # ========================================================================
-      # STEP 8: Verify Secrets
-      # ========================================================================
-      # Check that all required secrets are present (without exposing values)
-      - name: Verify Secrets
+      - name: Build iOS App
         env:
-          CERTIFICATE_P12: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_P12 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          KEYCHAIN_PASSWORD: ${{ vars.KEYCHAIN_PASSWORD }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-        run: |
-          echo "Checking required secrets..."
-
-          # Check each secret is set (show length, not value)
-          if [ -z "$CERTIFICATE_P12" ]; then echo "❌ IOS_DISTRIBUTION_CERTIFICATE_P12 is empty"; exit 1; fi
-          echo "✅ IOS_DISTRIBUTION_CERTIFICATE_P12 (length: ${#CERTIFICATE_P12} chars)"
-
-          if [ -z "$CERTIFICATE_PASSWORD" ]; then echo "❌ IOS_CERTIFICATE_PASSWORD is empty"; exit 1; fi
-          echo "✅ IOS_CERTIFICATE_PASSWORD (length: ${#CERTIFICATE_PASSWORD} chars)"
-
-          if [ -z "$PROVISIONING_PROFILE" ]; then echo "❌ IOS_PROVISIONING_PROFILE is empty"; exit 1; fi
-          echo "✅ IOS_PROVISIONING_PROFILE (length: ${#PROVISIONING_PROFILE} chars)"
-
-          if [ -z "$KEYCHAIN_PASSWORD" ]; then echo "❌ KEYCHAIN_PASSWORD is empty"; exit 1; fi
-          echo "✅ KEYCHAIN_PASSWORD (length: ${#KEYCHAIN_PASSWORD} chars)"
-
-          if [ -z "$APPLE_TEAM_ID" ]; then echo "❌ APPLE_TEAM_ID is empty"; exit 1; fi
-          echo "✅ APPLE_TEAM_ID: $APPLE_TEAM_ID"
-
-          if [ -z "$API_KEY_ID" ]; then echo "❌ APP_STORE_CONNECT_API_KEY_ID is empty"; exit 1; fi
-          echo "✅ APP_STORE_CONNECT_API_KEY_ID: $API_KEY_ID"
-
-          if [ -z "$API_ISSUER_ID" ]; then echo "❌ APP_STORE_CONNECT_API_ISSUER_ID is empty"; exit 1; fi
-          echo "✅ APP_STORE_CONNECT_API_ISSUER_ID: $API_ISSUER_ID"
-
-          if [ -z "$API_KEY" ]; then echo "❌ APP_STORE_CONNECT_API_KEY is empty"; exit 1; fi
-          echo "✅ APP_STORE_CONNECT_API_KEY (length: ${#API_KEY} chars)"
-
-          echo ""
-          echo "All secrets verified ✅"
-
-      # ========================================================================
-      # STEP 9: Prepare Code Signing Files
-      # ========================================================================
-      # Decode certificate and provisioning profile for Fastlane
-      - name: Prepare Code Signing Files
-        env:
-          CERTIFICATE_P12: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_P12 }}
-          PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-        run: |
-          cd ios
-
-          # Decode and verify certificate
-          echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
-          if [ ! -f certificate.p12 ]; then echo "❌ Failed to create certificate.p12"; exit 1; fi
-          echo "✅ certificate.p12 created ($(wc -c < certificate.p12) bytes)"
-
-          # Decode and verify provisioning profile
-          echo "$PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-          if [ ! -f profile.mobileprovision ]; then echo "❌ Failed to create profile.mobileprovision"; exit 1; fi
-          echo "✅ profile.mobileprovision created ($(wc -c < profile.mobileprovision) bytes)"
-
-          # Verify profile bundle ID and capabilities
-          echo "Verifying provisioning profile..."
-          PROFILE_DATA=$(security cms -D -i profile.mobileprovision)
-
-          # Check bundle ID
-          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' /dev/stdin <<< "$PROFILE_DATA")
-          echo "Bundle ID: $BUNDLE_ID"
-          echo "$BUNDLE_ID" | grep -q "com.elmify.app" && echo "✅ Bundle ID matches" || echo "❌ Bundle ID mismatch!"
-
-          # Check Sign in with Apple capability
-          SIGN_IN_APPLE=$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.developer.applesignin' /dev/stdin <<< "$PROFILE_DATA" 2>&1 || echo "NOT_FOUND")
-          if [ "$SIGN_IN_APPLE" != "NOT_FOUND" ]; then
-            echo "✅ Sign in with Apple capability: $SIGN_IN_APPLE"
-          else
-            echo "❌ Sign in with Apple capability NOT FOUND in profile!"
-            echo "This profile does not have Sign in with Apple enabled."
-            exit 1
-          fi
-
-          # Check profile name
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print :Name' /dev/stdin <<< "$PROFILE_DATA")
-          echo "Profile Name: $PROFILE_NAME"
-
-          # Check expiration date
-          EXPIRATION=$(/usr/libexec/PlistBuddy -c 'Print :ExpirationDate' /dev/stdin <<< "$PROFILE_DATA")
-          echo "Expires: $EXPIRATION"
-
-          # Create API key file
-          echo "$APP_STORE_CONNECT_API_KEY" > AuthKey.p8
-          if [ ! -f AuthKey.p8 ]; then echo "❌ Failed to create AuthKey.p8"; exit 1; fi
-          echo "✅ AuthKey.p8 created ($(wc -c < AuthKey.p8) bytes)"
-
-      # ========================================================================
-      # STEP 9: Install Fastlane
-      # ========================================================================
-      - name: Install Fastlane
-        run: |
-          cd ios
-          gem install fastlane
-
-      # ========================================================================
-      # STEP 9.5: Debug - List Available SDKs
-      # ========================================================================
-      - name: List Available iOS SDKs
-        run: |
-          echo "Available Xcode SDKs:"
-          xcodebuild -showsdks
-          echo ""
-          echo "Xcode version:"
-          xcodebuild -version
-          echo ""
-          echo "Available iOS platforms:"
-          ls -la /Applications/Xcode_16.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/
-
-      # ========================================================================
-      # STEP 10: Build & Upload with Fastlane
-      # ========================================================================
-      # Fastlane handles code signing, building, and uploading automatically
-      # Why: Industry standard tool for iOS CI/CD
-      # Why: Handles all the signing complexity we've been fighting
-      - name: Build & Upload to TestFlight
-        env:
-          # Environment variables for the app
           EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
           EXPO_PUBLIC_MEDIA_BASE_URL: ${{ secrets.EXPO_PUBLIC_MEDIA_BASE_URL }}
@@ -275,42 +42,20 @@ jobs:
           EXPO_PUBLIC_MINIO_BASE_URL: ${{ secrets.EXPO_PUBLIC_MINIO_BASE_URL }}
           EXPO_PUBLIC_DEBUG_API: ${{ secrets.EXPO_PUBLIC_DEBUG_API }}
           EXPO_PUBLIC_ENVIRONMENT: ${{ secrets.EXPO_PUBLIC_ENVIRONMENT }}
-          # Code signing secrets
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ vars.KEYCHAIN_PASSWORD }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-        run: |
-          cd ios
-          fastlane beta
+        run: eas build --local -p ios --profile production --non-interactive --output app.ipa
 
-      # ========================================================================
-      # STEP 11: Upload Build Artifacts
-      # ========================================================================
-      # Saves .ipa file to GitHub for download
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: "./app.ipa"
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         if: success()
         with:
           name: Elmify-${{ github.sha }}.ipa
-          path: ios/build/Elmify.ipa
+          path: app.ipa
           retention-days: 30
-
-      # ========================================================================
-      # STEP 12: Cleanup
-      # ========================================================================
-      # Removes sensitive files
-      - name: Cleanup
-        if: always()
-        run: |
-          cd ios
-          rm -f certificate.p12 AuthKey.p8 profile.mobileprovision
-
-# ============================================================================
-# NOTIFICATIONS (Optional)
-# ============================================================================
-# Uncomment to get Slack/Discord/Email notifications on build status
-# - uses: 8398a7/action-slack@v3
-#   with:
-#     status: ${{ job.status }}
-#     webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-#   if: always()
