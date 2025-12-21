@@ -21,25 +21,25 @@ platform :ios do
     )
 
     # Build the app using xcodebuild directly (skip gym's destination issues)
-    archive_path = "../build/Elmify.xcarchive"
+    archive_path = "#{Dir.pwd}/../build/Elmify.xcarchive"
+    export_path = "#{Dir.pwd}/../build"
 
-    # Archive the app
-    sh("xcodebuild archive " \
-       "-workspace Elmify.xcworkspace " \
-       "-scheme Elmify " \
-       "-configuration Release " \
-       "-archivePath #{archive_path} " \
-       "-allowProvisioningUpdates " \
-       "PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'")
+    # Archive the app (run from ios directory, not fastlane directory)
+    Dir.chdir("..") do
+      sh("xcodebuild archive " \
+         "-workspace Elmify.xcworkspace " \
+         "-scheme Elmify " \
+         "-configuration Release " \
+         "-archivePath #{archive_path} " \
+         "-allowProvisioningUpdates " \
+         "PROVISIONING_PROFILE_SPECIFIER='[expo] com.elmify.app AppStore 2025-11-19T09:34:21.385Z'")
 
-    # Export the IPA
-    sh("xcodebuild -exportArchive " \
-       "-archivePath #{archive_path} " \
-       "-exportPath ../build " \
-       "-exportOptionsPlist exportOptions.plist")
-
-    # Rename to expected output name
-    sh("mv ../build/Elmify.ipa ../build/Elmify.ipa 2>/dev/null || true")
+      # Export the IPA
+      sh("xcodebuild -exportArchive " \
+         "-archivePath #{archive_path} " \
+         "-exportPath #{export_path} " \
+         "-exportOptionsPlist exportOptions.plist")
+    end
 
     # Upload to TestFlight
     pilot(
